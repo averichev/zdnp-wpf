@@ -8,35 +8,36 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        NavigateToFile();
+        Title = "Справочники";
     }
 
-    private void OnFileMenuClick(object sender, RoutedEventArgs e)
-    {
-        NavigateToFile();
-    }
-
-    private void OnEditMenuClick(object sender, RoutedEventArgs e)
-    {
-        MainContent.Content = new EditView();
-        Title = "Правка";
-    }
-
-    private void OnViewMenuClick(object sender, RoutedEventArgs e)
-    {
-        MainContent.Content = new ViewView();
-        Title = "Вид";
-    }
-
-    private void OnNewAddressClick(object sender, RoutedEventArgs e)
+    private void OnAddressesClick(object sender, RoutedEventArgs e)
     {
         MainContent.Content = new AddressView();
-        Title = "Адрес";
+        Title = "Справочники — Адреса";
     }
 
-    private void NavigateToFile()
+    private void OnOrganizationsClick(object sender, RoutedEventArgs e)
     {
-        MainContent.Content = new FileView();
-        Title = "Файл";
+        MainContent.Content = new OrganizationsView();
+        Title = "Справочники — Организации";
+    }
+
+    private void OnLegalEntitiesClick(object sender, RoutedEventArgs e)
+    {
+        MainContent.Content = new LegalEntitiesView();
+        Title = "Справочники — Юридические лица";
+    }
+
+    private void OnPhysicalPersonsClick(object sender, RoutedEventArgs e)
+    {
+        MainContent.Content = new PhysicalPersonsView();
+        Title = "Справочники — Физические лица";
+    }
+
+    private void OnIndividualEntrepreneursClick(object sender, RoutedEventArgs e)
+    {
+        MainContent.Content = new IndividualEntrepreneursView();
+        Title = "Справочники — Индивидуальные предприниматели";
     }
 }

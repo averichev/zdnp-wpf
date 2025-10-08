@@ -5,16 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="clr-namespace:WpfApp1.Views"
         mc:Ignorable="d"
-        Title="Файл" Height="450" Width="800">
+        Title="Справочники" Height="450" Width="800">
     <DockPanel>
         <Menu DockPanel.Dock="Top">
-            <MenuItem Header="Файл">
-                <MenuItem Header="Новый">
-                    <MenuItem Header="Адрес" Click="OnNewAddressClick"/>
-                </MenuItem>
+            <MenuItem Header="📚 Справочники">
+                <MenuItem Header="Адреса" Click="OnAddressesClick"/>
+                <MenuItem Header="Организации" Click="OnOrganizationsClick"/>
+                <MenuItem Header="Юридические лица" Click="OnLegalEntitiesClick"/>
+                <MenuItem Header="Физические лица" Click="OnPhysicalPersonsClick"/>
+                <MenuItem Header="Индивидуальные предприниматели" Click="OnIndividualEntrepreneursClick"/>
             </MenuItem>
-            <MenuItem Header="Правка" Click="OnEditMenuClick"/>
-            <MenuItem Header="Вид" Click="OnViewMenuClick"/>
         </Menu>
         <ContentControl x:Name="MainContent"/>
     </DockPanel>
