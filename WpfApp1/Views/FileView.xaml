@@ -6,8 +6,8 @@
              mc:Ignorable="d"
              d:DesignHeight="350" d:DesignWidth="525">
     <Grid Background="White">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
-            <TextBlock Text="Экран \"Файл\"" FontSize="24" FontWeight="Bold" TextAlignment="Center"/>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Экран &quot;Файл&quot;" FontSize="24" FontWeight="Bold" TextAlignment="Center" Margin="0,0,0,12"/>
             <TextBlock Text="Здесь может находиться содержимое, связанное с управлением файлами." TextAlignment="Center" TextWrapping="Wrap" Width="320"/>
         </StackPanel>
     </Grid>
