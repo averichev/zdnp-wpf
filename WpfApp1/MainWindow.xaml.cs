@@ -28,6 +28,12 @@ public partial class MainWindow : Window
         Title = "Вид";
     }
 
+    private void OnNewAddressClick(object sender, RoutedEventArgs e)
+    {
+        MainContent.Content = new AddressView();
+        Title = "Адрес";
+    }
+
     private void NavigateToFile()
     {
         MainContent.Content = new FileView();
