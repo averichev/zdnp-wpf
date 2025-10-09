@@ -9,6 +9,18 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         Title = "Справочники";
+
+        // Attempt to query Rust core library for version and a sample computation.
+        // This is wrapped in try/catch so the app still runs if the native DLL is missing.
+        try
+        {
+            var ver = CoreNative.CoreVersion();
+            var sum = CoreNative.CoreAdd(2, 3);
+            Title = $"Справочники — core v{ver} (2+3={sum})";
+        }
+        catch (System.DllNotFoundException) { /* Native DLL not present; ignore. */ }
+        catch (System.EntryPointNotFoundException) { /* Functions not found; ignore. */ }
+        catch (System.BadImageFormatException) { /* Wrong architecture; ignore. */ }
     }
 
     private void OnAddressesClick(object sender, RoutedEventArgs e)
