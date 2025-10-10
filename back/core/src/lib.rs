@@ -6,14 +6,14 @@ pub fn add(left: u64, right: u64) -> u64 {
 }
 
 // C ABI exports for interop with .NET (WPF)
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn core_add(a: i32, b: i32) -> i32 {
     a + b
 }
 
 // Returns a pointer to a null-terminated static string with version info.
 // Do NOT attempt to free this pointer on the C# side.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn core_version() -> *const c_char {
     b"0.1.0\0".as_ptr() as *const c_char
 }
