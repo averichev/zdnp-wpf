@@ -6,7 +6,7 @@
              mc:Ignorable="d"
              d:DesignHeight="350" d:DesignWidth="525">
     <Grid Background="White">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="360" Spacing="12">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="360">
             <TextBlock Text="Список организаций" FontSize="24" FontWeight="Bold" TextAlignment="Center"/>
             <TextBlock Text="Выберите организацию из списка или создайте новую." TextAlignment="Center" TextWrapping="Wrap"/>
             <Button Content="Добавить организацию"
