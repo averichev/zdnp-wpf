@@ -6,19 +6,13 @@
              mc:Ignorable="d"
              d:DesignHeight="350" d:DesignWidth="525">
     <Grid Background="White">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="360">
-            <TextBlock Text="Экран &quot;Адрес&quot;" FontSize="24" FontWeight="Bold" TextAlignment="Center" Margin="0,0,0,12"/>
-            <TextBlock Text="Здесь можно создать новый адрес." TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,16"/>
-
-            <StackPanel Orientation="Vertical" Margin="0,8,0,0">
-                <TextBlock Text="Улица"/>
-                <TextBox Margin="0,4,0,8"/>
-                <TextBlock Text="Город"/>
-                <TextBox Margin="0,4,0,8"/>
-                <TextBlock Text="Индекс"/>
-                <TextBox Margin="0,4,0,8"/>
-                <Button Content="Сохранить" HorizontalAlignment="Right" Width="100"/>
-            </StackPanel>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="360" Margin="24">
+            <TextBlock Text="Список адресов" FontSize="24" FontWeight="Bold" TextAlignment="Center"/>
+            <TextBlock Text="Выберите адрес из списка или добавьте новый." TextAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,16"/>
+            <Button Content="Добавить адрес"
+                    Width="200"
+                    HorizontalAlignment="Center"
+                    Click="OnAddAddressClick"/>
         </StackPanel>
     </Grid>
 </UserControl>
