@@ -35,6 +35,12 @@ public partial class MainWindow : Window
         Title = "Справочники — Создание организации";
     }
 
+    public void NavigateToCreateAddress()
+    {
+        MainContent.Content = new CreateAddressView();
+        Title = "Справочники — Создание адреса";
+    }
+
     private void OnAddressesClick(object sender, RoutedEventArgs e)
     {
         MainContent.Content = new AddressView();
