@@ -23,6 +23,18 @@ public partial class MainWindow : Window
         catch (System.BadImageFormatException) { /* Wrong architecture; ignore. */ }
     }
 
+    public void NavigateToOrganizations()
+    {
+        MainContent.Content = new OrganizationsView();
+        Title = "Справочники — Организации";
+    }
+
+    public void NavigateToCreateOrganization()
+    {
+        MainContent.Content = new CreateOrganizationView();
+        Title = "Справочники — Создание организации";
+    }
+
     private void OnAddressesClick(object sender, RoutedEventArgs e)
     {
         MainContent.Content = new AddressView();
@@ -31,8 +43,7 @@ public partial class MainWindow : Window
 
     private void OnOrganizationsClick(object sender, RoutedEventArgs e)
     {
-        MainContent.Content = new OrganizationsView();
-        Title = "Справочники — Организации";
+        NavigateToOrganizations();
     }
 
     private void OnLegalEntitiesClick(object sender, RoutedEventArgs e)
