@@ -1,5 +1,48 @@
 use std::ffi::c_char;
 
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct AddressDto {
+    pub postal_code: Option<String>,
+    pub country: Option<String>,
+    pub region: Option<String>,
+    pub district: Option<String>,
+    pub city: Option<String>,
+    pub locality: Option<String>,
+    pub street: Option<String>,
+    pub house: Option<String>,
+    pub building: Option<String>,
+    pub structure: Option<String>,
+    pub apartment: Option<String>,
+    pub comment: Option<String>,
+}
+
+pub fn format_address(dto: &AddressDto) -> String {
+    fn push_if_present(parts: &mut Vec<String>, value: &Option<String>) {
+        if let Some(value) = value {
+            let trimmed = value.trim();
+            if !trimmed.is_empty() {
+                parts.push(trimmed.to_string());
+            }
+        }
+    }
+
+    let mut parts = Vec::new();
+    push_if_present(&mut parts, &dto.postal_code);
+    push_if_present(&mut parts, &dto.country);
+    push_if_present(&mut parts, &dto.region);
+    push_if_present(&mut parts, &dto.district);
+    push_if_present(&mut parts, &dto.city);
+    push_if_present(&mut parts, &dto.locality);
+    push_if_present(&mut parts, &dto.street);
+    push_if_present(&mut parts, &dto.house);
+    push_if_present(&mut parts, &dto.building);
+    push_if_present(&mut parts, &dto.structure);
+    push_if_present(&mut parts, &dto.apartment);
+    push_if_present(&mut parts, &dto.comment);
+
+    parts.join(", ")
+}
+
 // Internal Rust API (can be used from Rust unit tests or other Rust crates if needed)
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
@@ -26,5 +69,30 @@ mod tests {
     fn it_works() {
         let result = add(2, 2);
         assert_eq!(result, 4);
+    }
+
+    #[test]
+    fn format_address_skips_empty_values() {
+        let dto = AddressDto {
+            postal_code: Some("123456".into()),
+            country: Some("Россия".into()),
+            region: Some("Московская область".into()),
+            district: None,
+            city: Some("Москва".into()),
+            locality: Some("".into()),
+            street: Some("Тверская".into()),
+            house: Some("1".into()),
+            building: Some("".into()),
+            structure: None,
+            apartment: Some("101".into()),
+            comment: Some("Около метро".into()),
+        };
+
+        let formatted = format_address(&dto);
+
+        assert_eq!(
+            formatted,
+            "123456, Россия, Московская область, Москва, Тверская, 1, 101, Около метро"
+        );
     }
 }
