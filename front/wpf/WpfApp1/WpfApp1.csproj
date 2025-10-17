@@ -9,11 +9,11 @@
     </PropertyGroup>
 
   <Target Name="BuildRustCore" AfterTargets="Build" Condition="'$(OS)' == 'Windows_NT'">
-    <Message Text="Building Rust core (zdnp_core)..." Importance="high" />
-    <Exec Command="cargo build --manifest-path $(MSBuildProjectDirectory)\..\..\..\back\core\Cargo.toml --release" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\..\back\core\target\release\zdnp_core.dll"
+    <Message Text="Building Rust FFI (zdnp_core)..." Importance="high" />
+    <Exec Command="cargo build --manifest-path $(MSBuildProjectDirectory)\..\..\..\back\ffi\Cargo.toml --release" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\..\back\ffi\target\release\zdnp_core.dll"
           DestinationFolder="$(OutDir)"
-          Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\back\core\target\release\zdnp_core.dll')" />
+          Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\back\ffi\target\release\zdnp_core.dll')" />
   </Target>
 
 </Project>
