@@ -13,46 +13,52 @@
 
                 <StackPanel Orientation="Vertical" Margin="0,16,0,0">
                     <TextBlock Text="Почтовый индекс"/>
-                    <TextBox Margin="0,0,0,8"/>
+                    <TextBox x:Name="PostalCodeTextBox" Margin="0,0,0,8"/>
 
                     <TextBlock Text="Страна"/>
-                    <TextBox Margin="0,0,0,8"/>
+                    <TextBox x:Name="CountryTextBox" Margin="0,0,0,8"/>
 
                     <TextBlock Text="Регион"/>
-                    <TextBox Margin="0,0,0,8"/>
+                    <TextBox x:Name="RegionTextBox" Margin="0,0,0,8"/>
 
                     <TextBlock Text="Район"/>
-                    <TextBox Margin="0,0,0,8"/>
+                    <TextBox x:Name="DistrictTextBox" Margin="0,0,0,8"/>
 
                     <TextBlock Text="Город"/>
-                    <TextBox Margin="0,0,0,8"/>
+                    <TextBox x:Name="CityTextBox" Margin="0,0,0,8"/>
 
                     <TextBlock Text="Населённый пункт"/>
-                    <TextBox Margin="0,0,0,8"/>
+                    <TextBox x:Name="LocalityTextBox" Margin="0,0,0,8"/>
 
                     <TextBlock Text="Улица"/>
-                    <TextBox Margin="0,0,0,8"/>
+                    <TextBox x:Name="StreetTextBox" Margin="0,0,0,8"/>
 
                     <TextBlock Text="Дом"/>
-                    <TextBox Margin="0,0,0,8"/>
+                    <TextBox x:Name="HouseTextBox" Margin="0,0,0,8"/>
 
                     <TextBlock Text="Корпус"/>
-                    <TextBox Margin="0,0,0,8"/>
+                    <TextBox x:Name="BuildingTextBox" Margin="0,0,0,8"/>
 
                     <TextBlock Text="Строение"/>
-                    <TextBox Margin="0,0,0,8"/>
+                    <TextBox x:Name="StructureTextBox" Margin="0,0,0,8"/>
 
                     <TextBlock Text="Квартира / офис"/>
-                    <TextBox Margin="0,0,0,8"/>
+                    <TextBox x:Name="ApartmentTextBox" Margin="0,0,0,8"/>
 
                     <TextBlock Text="Комментарий"/>
-                    <TextBox Margin="0,0,0,8" AcceptsReturn="True" Height="80" TextWrapping="Wrap"/>
+                    <TextBox x:Name="CommentTextBox" Margin="0,0,0,8" AcceptsReturn="True" Height="80" TextWrapping="Wrap"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-                    <Button Content="Очистить" Width="100" Margin="0,0,8,0"/>
-                    <Button Content="Сохранить" Width="120"/>
+                    <Button Content="Очистить" Width="100" Margin="0,0,8,0" Click="OnClearClick"/>
+                    <Button Content="Сохранить" Width="120" Click="OnSaveClick"/>
                 </StackPanel>
+
+                <TextBlock x:Name="FormattedAddressTextBlock"
+                           Margin="0,12,0,0"
+                           TextWrapping="Wrap"
+                           Foreground="Gray"
+                           Visibility="Collapsed"/>
             </StackPanel>
         </ScrollViewer>
     </Grid>
