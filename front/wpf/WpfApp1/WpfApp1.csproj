@@ -11,9 +11,9 @@
   <Target Name="BuildRustCore" AfterTargets="Build" Condition="'$(OS)' == 'Windows_NT'">
     <Message Text="Building Rust FFI (zdnp_core)..." Importance="high" />
     <Exec Command="cargo build --manifest-path $(MSBuildProjectDirectory)\..\..\..\back\ffi\Cargo.toml --release" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\..\back\ffi\target\release\zdnp_core.dll"
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\..\back\target\release\zdnp_core.dll"
           DestinationFolder="$(OutDir)"
-          Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\back\ffi\target\release\zdnp_core.dll')" />
+          Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\back\target\release\zdnp_core.dll')" />
   </Target>
 
 </Project>
