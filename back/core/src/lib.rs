@@ -1,3 +1,9 @@
+pub type MigrationsResult<T> = Result<T, Box<dyn std::error::Error + Send + Sync>>;
+
+pub trait Migrations {
+    fn run(&self) -> MigrationsResult<()>;
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct AddressDto {
     pub postal_code: Option<String>,

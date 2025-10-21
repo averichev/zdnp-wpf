@@ -1776,6 +1776,8 @@ name = "zdnp_data"
 version = "0.1.0"
 dependencies = [
  "sqlx",
+ "tokio",
+ "zdnp_core",
 ]
 
 [[package]]
@@ -1783,6 +1785,7 @@ name = "zdnp_ffi"
 version = "0.1.0"
 dependencies = [
  "zdnp_core",
+ "zdnp_data",
 ]
 
 [[package]]
