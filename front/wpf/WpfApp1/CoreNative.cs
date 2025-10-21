@@ -14,6 +14,13 @@ internal static partial class CoreNative
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_version")]
     private static extern IntPtr core_version();
 
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "migrations_run")]
+    private static extern bool migrations_run();
+
+    private static readonly Lazy<bool> s_migrations = new(() => migrations_run());
+
+    public static bool EnsureMigrations() => s_migrations.Value;
+
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_format_address")]
     private static extern IntPtr core_format_address(ref AddressDtoFfi dto);
 
