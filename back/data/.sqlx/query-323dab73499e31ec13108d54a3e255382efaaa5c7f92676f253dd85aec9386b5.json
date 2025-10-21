@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT type FROM authors WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "type",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "323dab73499e31ec13108d54a3e255382efaaa5c7f92676f253dd85aec9386b5"
+}

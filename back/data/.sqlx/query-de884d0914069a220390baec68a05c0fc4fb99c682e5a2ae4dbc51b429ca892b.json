@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT person_id FROM person_authors WHERE author_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "person_id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "de884d0914069a220390baec68a05c0fc4fb99c682e5a2ae4dbc51b429ca892b"
+}

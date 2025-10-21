@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT entrepreneur_id FROM entrepreneur_authors WHERE author_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "entrepreneur_id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "e518acca70703dfa21b7298aba314ad3154958e35f83b0b5c32da7c4640a86cc"
+}

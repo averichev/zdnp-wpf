@@ -1,0 +1,56 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id, name, patronymic, surname, snils, email, address_id FROM person",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "patronymic",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "surname",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "snils",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "email",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "address_id",
+        "ordinal": 6,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "42fefd8b18a27ff1c425f1c000e156140fd21fa012a1078c8159f5a407b5b760"
+}

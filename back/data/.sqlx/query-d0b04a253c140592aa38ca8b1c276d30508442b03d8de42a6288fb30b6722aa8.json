@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT organization_id FROM organization_authors WHERE author_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "organization_id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "d0b04a253c140592aa38ca8b1c276d30508442b03d8de42a6288fb30b6722aa8"
+}

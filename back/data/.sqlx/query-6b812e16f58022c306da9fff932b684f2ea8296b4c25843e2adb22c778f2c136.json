@@ -1,0 +1,68 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT\n                    id,\n                    full_name,\n                    abbreviated_name,\n                    ogrn,\n                    rafp,\n                    inn,\n                    kpp,\n                    address_id,\n                    email\n                FROM organization WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "full_name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "abbreviated_name",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "ogrn",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "rafp",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "inn",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "kpp",
+        "ordinal": 6,
+        "type_info": "Integer"
+      },
+      {
+        "name": "address_id",
+        "ordinal": 7,
+        "type_info": "Integer"
+      },
+      {
+        "name": "email",
+        "ordinal": 8,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "6b812e16f58022c306da9fff932b684f2ea8296b4c25843e2adb22c778f2c136"
+}

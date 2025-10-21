@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT organization_id FROM organization_developer WHERE developer_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "organization_id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "68d7a04af9d8d7bc1e33858829f6cf4149e482096153d82e747c48915f2bb1c5"
+}

@@ -1,0 +1,5 @@
+-- Таблица авторов
+CREATE TABLE authors (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type INTEGER NOT NULL REFERENCES author_type(id) ON DELETE RESTRICT
+);

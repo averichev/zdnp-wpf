@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id, surname, name, patronymic, ogrnip, inn, address_id, email\n        FROM entrepreneur WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "surname",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "name",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "patronymic",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "ogrnip",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "inn",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "address_id",
+        "ordinal": 6,
+        "type_info": "Integer"
+      },
+      {
+        "name": "email",
+        "ordinal": 7,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "22033fa1f83bdcde83c83d48c3a44366170db8a6143d85a7b315d2eec24cd4a6"
+}

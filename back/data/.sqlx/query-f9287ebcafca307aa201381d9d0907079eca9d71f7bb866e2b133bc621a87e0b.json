@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT person_id FROM person_developer WHERE developer_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "person_id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "f9287ebcafca307aa201381d9d0907079eca9d71f7bb866e2b133bc621a87e0b"
+}
