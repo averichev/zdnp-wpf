@@ -9,3 +9,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 zdnp_core = { path = "../core" }
+zdnp_data = { path = "../data" }

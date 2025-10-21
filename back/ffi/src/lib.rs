@@ -1,7 +1,7 @@
 use std::ffi::{CStr, CString, c_char};
 use std::str::Utf8Error;
 
-use zdnp_core::{self, AddressDto};
+use zdnp_core::{self, AddressDto, Migrations};
 
 /// Errors that can occur while converting FFI data into safe Rust structures.
 #[derive(Debug)]
@@ -120,4 +120,10 @@ pub extern "C" fn core_add(a: i32, b: i32) -> i32 {
 #[unsafe(no_mangle)]
 pub extern "C" fn core_version() -> *const c_char {
     b"0.1.0\0".as_ptr() as *const c_char
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn migrations_run() -> bool {
+    let migrations = zdnp_data::SqliteMigrations::new();
+    migrations.run().is_ok()
 }
