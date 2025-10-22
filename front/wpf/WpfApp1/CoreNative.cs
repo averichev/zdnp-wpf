@@ -35,37 +35,31 @@ internal static partial class CoreNative
     }
 
     public sealed record class AddressDto(
-        string? PostalCode,
+        string? RegionCode,
+        string? Note,
         string? Country,
-        string? Region,
         string? District,
         string? City,
-        string? Locality,
+        string? Settlement,
         string? Street,
-        string? House,
         string? Building,
-        string? Structure,
-        string? Apartment,
-        string? Comment
+        string? Room
     );
 
     public static string? CoreFormatAddress(AddressDto dto)
     {
-        var allocations = new List<IntPtr>(12);
+        var allocations = new List<IntPtr>(9);
         var ffi = new AddressDtoFfi
         {
-            PostalCode = AllocateUtf8(dto.PostalCode, allocations),
+            RegionCode = AllocateUtf8(dto.RegionCode, allocations),
+            Note = AllocateUtf8(dto.Note, allocations),
             Country = AllocateUtf8(dto.Country, allocations),
-            Region = AllocateUtf8(dto.Region, allocations),
             District = AllocateUtf8(dto.District, allocations),
             City = AllocateUtf8(dto.City, allocations),
-            Locality = AllocateUtf8(dto.Locality, allocations),
+            Settlement = AllocateUtf8(dto.Settlement, allocations),
             Street = AllocateUtf8(dto.Street, allocations),
-            House = AllocateUtf8(dto.House, allocations),
             Building = AllocateUtf8(dto.Building, allocations),
-            Structure = AllocateUtf8(dto.Structure, allocations),
-            Apartment = AllocateUtf8(dto.Apartment, allocations),
-            Comment = AllocateUtf8(dto.Comment, allocations),
+            Room = AllocateUtf8(dto.Room, allocations),
         };
 
         try
@@ -112,17 +106,14 @@ internal static partial class CoreNative
     [StructLayout(LayoutKind.Sequential)]
     private struct AddressDtoFfi
     {
-        public IntPtr PostalCode;
+        public IntPtr RegionCode;
+        public IntPtr Note;
         public IntPtr Country;
-        public IntPtr Region;
         public IntPtr District;
         public IntPtr City;
-        public IntPtr Locality;
+        public IntPtr Settlement;
         public IntPtr Street;
-        public IntPtr House;
         public IntPtr Building;
-        public IntPtr Structure;
-        public IntPtr Apartment;
-        public IntPtr Comment;
+        public IntPtr Room;
     }
 }
