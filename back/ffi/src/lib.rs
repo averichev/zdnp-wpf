@@ -17,18 +17,15 @@ impl From<Utf8Error> for FfiConversionError {
 
 #[repr(C)]
 pub struct AddressDtoFfi {
-    pub postal_code: *const c_char,
+    pub region_code: *const c_char,
+    pub note: *const c_char,
     pub country: *const c_char,
-    pub region: *const c_char,
     pub district: *const c_char,
     pub city: *const c_char,
-    pub locality: *const c_char,
+    pub settlement: *const c_char,
     pub street: *const c_char,
-    pub house: *const c_char,
     pub building: *const c_char,
-    pub structure: *const c_char,
-    pub apartment: *const c_char,
-    pub comment: *const c_char,
+    pub room: *const c_char,
 }
 
 impl AddressDtoFfi {
@@ -54,18 +51,15 @@ impl AddressDtoFfi {
         }
 
         Ok(AddressDto {
-            postal_code: read_field(self.postal_code)?,
+            region_code: read_field(self.region_code)?,
+            note: read_field(self.note)?,
             country: read_field(self.country)?,
-            region: read_field(self.region)?,
             district: read_field(self.district)?,
             city: read_field(self.city)?,
-            locality: read_field(self.locality)?,
+            settlement: read_field(self.settlement)?,
             street: read_field(self.street)?,
-            house: read_field(self.house)?,
             building: read_field(self.building)?,
-            structure: read_field(self.structure)?,
-            apartment: read_field(self.apartment)?,
-            comment: read_field(self.comment)?,
+            room: read_field(self.room)?,
         })
     }
 }

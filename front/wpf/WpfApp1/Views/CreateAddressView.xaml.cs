@@ -17,19 +17,22 @@ public partial class CreateAddressView : UserControl
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(RegionCodeTextBox.Text))
+            {
+                ShowMessage("Поле \"Код региона\" обязательно для заполнения.", isError: true);
+                return;
+            }
+
             var dto = new CoreNative.AddressDto(
-                PostalCodeTextBox.Text,
+                RegionCodeTextBox.Text,
+                NoteTextBox.Text,
                 CountryTextBox.Text,
-                RegionTextBox.Text,
                 DistrictTextBox.Text,
                 CityTextBox.Text,
-                LocalityTextBox.Text,
+                SettlementTextBox.Text,
                 StreetTextBox.Text,
-                HouseTextBox.Text,
                 BuildingTextBox.Text,
-                StructureTextBox.Text,
-                ApartmentTextBox.Text,
-                CommentTextBox.Text
+                RoomTextBox.Text
             );
 
             var formatted = CoreNative.CoreFormatAddress(dto);
@@ -59,18 +62,15 @@ public partial class CreateAddressView : UserControl
 
     private void OnClearClick(object sender, RoutedEventArgs e)
     {
-        PostalCodeTextBox.Text = string.Empty;
+        RegionCodeTextBox.Text = string.Empty;
+        NoteTextBox.Text = string.Empty;
         CountryTextBox.Text = string.Empty;
-        RegionTextBox.Text = string.Empty;
         DistrictTextBox.Text = string.Empty;
         CityTextBox.Text = string.Empty;
-        LocalityTextBox.Text = string.Empty;
+        SettlementTextBox.Text = string.Empty;
         StreetTextBox.Text = string.Empty;
-        HouseTextBox.Text = string.Empty;
         BuildingTextBox.Text = string.Empty;
-        StructureTextBox.Text = string.Empty;
-        ApartmentTextBox.Text = string.Empty;
-        CommentTextBox.Text = string.Empty;
+        RoomTextBox.Text = string.Empty;
 
         FormattedAddressTextBlock.Text = string.Empty;
         FormattedAddressTextBlock.Visibility = Visibility.Collapsed;

@@ -12,14 +12,14 @@
                 <TextBlock Text="Заполните форму, чтобы добавить новый адрес." TextAlignment="Center" TextWrapping="Wrap"/>
 
                 <StackPanel Orientation="Vertical" Margin="0,16,0,0">
-                    <TextBlock Text="Почтовый индекс"/>
-                    <TextBox x:Name="PostalCodeTextBox" Margin="0,0,0,8"/>
+                    <TextBlock Text="Код региона"/>
+                    <TextBox x:Name="RegionCodeTextBox" Margin="0,0,0,8"/>
+
+                    <TextBlock Text="Примечание"/>
+                    <TextBox x:Name="NoteTextBox" Margin="0,0,0,8" AcceptsReturn="True" Height="60" TextWrapping="Wrap"/>
 
                     <TextBlock Text="Страна"/>
                     <TextBox x:Name="CountryTextBox" Margin="0,0,0,8"/>
-
-                    <TextBlock Text="Регион"/>
-                    <TextBox x:Name="RegionTextBox" Margin="0,0,0,8"/>
 
                     <TextBlock Text="Район"/>
                     <TextBox x:Name="DistrictTextBox" Margin="0,0,0,8"/>
@@ -28,25 +28,16 @@
                     <TextBox x:Name="CityTextBox" Margin="0,0,0,8"/>
 
                     <TextBlock Text="Населённый пункт"/>
-                    <TextBox x:Name="LocalityTextBox" Margin="0,0,0,8"/>
+                    <TextBox x:Name="SettlementTextBox" Margin="0,0,0,8"/>
 
                     <TextBlock Text="Улица"/>
                     <TextBox x:Name="StreetTextBox" Margin="0,0,0,8"/>
 
-                    <TextBlock Text="Дом"/>
-                    <TextBox x:Name="HouseTextBox" Margin="0,0,0,8"/>
-
-                    <TextBlock Text="Корпус"/>
+                    <TextBlock Text="Здание"/>
                     <TextBox x:Name="BuildingTextBox" Margin="0,0,0,8"/>
 
-                    <TextBlock Text="Строение"/>
-                    <TextBox x:Name="StructureTextBox" Margin="0,0,0,8"/>
-
-                    <TextBlock Text="Квартира / офис"/>
-                    <TextBox x:Name="ApartmentTextBox" Margin="0,0,0,8"/>
-
-                    <TextBlock Text="Комментарий"/>
-                    <TextBox x:Name="CommentTextBox" Margin="0,0,0,8" AcceptsReturn="True" Height="80" TextWrapping="Wrap"/>
+                    <TextBlock Text="Помещение"/>
+                    <TextBox x:Name="RoomTextBox" Margin="0,0,0,8"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
