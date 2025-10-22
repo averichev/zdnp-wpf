@@ -27,6 +27,9 @@ internal static partial class CoreNative
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_free_string")]
     private static extern void core_free_string(IntPtr ptr);
 
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_create_address")]
+    private static extern bool core_create_address(ref AddressDtoFfi dto, out long id);
+
     public static string CoreVersion()
     {
         var ptr = core_version();
@@ -49,18 +52,7 @@ internal static partial class CoreNative
     public static string? CoreFormatAddress(AddressDto dto)
     {
         var allocations = new List<IntPtr>(9);
-        var ffi = new AddressDtoFfi
-        {
-            RegionCode = AllocateUtf8(dto.RegionCode, allocations),
-            Note = AllocateUtf8(dto.Note, allocations),
-            Country = AllocateUtf8(dto.Country, allocations),
-            District = AllocateUtf8(dto.District, allocations),
-            City = AllocateUtf8(dto.City, allocations),
-            Settlement = AllocateUtf8(dto.Settlement, allocations),
-            Street = AllocateUtf8(dto.Street, allocations),
-            Building = AllocateUtf8(dto.Building, allocations),
-            Room = AllocateUtf8(dto.Room, allocations),
-        };
+        var ffi = CreateAddressDtoFfi(dto, allocations);
 
         try
         {
@@ -81,13 +73,22 @@ internal static partial class CoreNative
         }
         finally
         {
-            foreach (var ptr in allocations)
-            {
-                if (ptr != IntPtr.Zero)
-                {
-                    Marshal.FreeCoTaskMem(ptr);
-                }
-            }
+            FreeAllocations(allocations);
+        }
+    }
+
+    public static bool CoreCreateAddress(AddressDto dto, out long id)
+    {
+        var allocations = new List<IntPtr>(9);
+        var ffi = CreateAddressDtoFfi(dto, allocations);
+
+        try
+        {
+            return core_create_address(ref ffi, out id);
+        }
+        finally
+        {
+            FreeAllocations(allocations);
         }
     }
 
@@ -101,6 +102,33 @@ internal static partial class CoreNative
         var ptr = Marshal.StringToCoTaskMemUTF8(value);
         allocations.Add(ptr);
         return ptr;
+    }
+
+    private static AddressDtoFfi CreateAddressDtoFfi(AddressDto dto, List<IntPtr> allocations)
+    {
+        return new AddressDtoFfi
+        {
+            RegionCode = AllocateUtf8(dto.RegionCode, allocations),
+            Note = AllocateUtf8(dto.Note, allocations),
+            Country = AllocateUtf8(dto.Country, allocations),
+            District = AllocateUtf8(dto.District, allocations),
+            City = AllocateUtf8(dto.City, allocations),
+            Settlement = AllocateUtf8(dto.Settlement, allocations),
+            Street = AllocateUtf8(dto.Street, allocations),
+            Building = AllocateUtf8(dto.Building, allocations),
+            Room = AllocateUtf8(dto.Room, allocations),
+        };
+    }
+
+    private static void FreeAllocations(List<IntPtr> allocations)
+    {
+        foreach (var ptr in allocations)
+        {
+            if (ptr != IntPtr.Zero)
+            {
+                Marshal.FreeCoTaskMem(ptr);
+            }
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]

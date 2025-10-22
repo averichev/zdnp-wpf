@@ -3,7 +3,9 @@ use std::path::PathBuf;
 
 use sqlx::{SqlitePool, migrate::Migrator, sqlite::SqliteConnectOptions};
 use tokio::runtime::Runtime;
-use zdnp_core::{Migrations, MigrationsResult};
+use zdnp_core::{
+    AddressDto, AddressRepository, AddressRepositoryError, Migrations, MigrationsResult,
+};
 
 static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
 
@@ -71,5 +73,86 @@ impl Migrations for SqliteMigrations {
         })?;
 
         Ok(())
+    }
+}
+
+pub struct SqliteAddressRepository {
+    database_file_name: String,
+}
+
+impl SqliteAddressRepository {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_file_name<S: Into<String>>(file_name: S) -> Self {
+        Self {
+            database_file_name: file_name.into(),
+        }
+    }
+
+    fn database_path(&self) -> Result<PathBuf, AddressRepositoryError> {
+        let executable = std::env::current_exe()
+            .map_err(|error| AddressRepositoryError::storage(error.to_string()))?;
+        let directory = executable.parent().ok_or_else(|| {
+            AddressRepositoryError::storage("Failed to determine application directory")
+        })?;
+
+        Ok(directory.join(&self.database_file_name))
+    }
+}
+
+impl Default for SqliteAddressRepository {
+    fn default() -> Self {
+        Self {
+            database_file_name: DEFAULT_DATABASE_FILE_NAME.to_string(),
+        }
+    }
+}
+
+impl AddressRepository for SqliteAddressRepository {
+    fn create(&self, dto: &AddressDto) -> Result<i64, AddressRepositoryError> {
+        let database_path = self.database_path()?;
+        let runtime =
+            Runtime::new().map_err(|error| AddressRepositoryError::storage(error.to_string()))?;
+
+        runtime.block_on(async move {
+            let options = SqliteConnectOptions::new()
+                .filename(&database_path)
+                .create_if_missing(true);
+
+            let pool = SqlitePool::connect_with(options)
+                .await
+                .map_err(|error| AddressRepositoryError::storage(error.to_string()))?;
+
+            let region_code = dto
+                .region_code
+                .as_deref()
+                .ok_or_else(|| AddressRepositoryError::storage("Region code is required"))?;
+
+            let result = sqlx::query(
+                r#"INSERT INTO address (
+                    region_code, note, country, district, city, settlement, street, building, room
+                ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)"#,
+            )
+            .bind(region_code)
+            .bind(dto.note.as_deref())
+            .bind(dto.country.as_deref())
+            .bind(dto.district.as_deref())
+            .bind(dto.city.as_deref())
+            .bind(dto.settlement.as_deref())
+            .bind(dto.street.as_deref())
+            .bind(dto.building.as_deref())
+            .bind(dto.room.as_deref())
+            .execute(&pool)
+            .await
+            .map_err(|error| AddressRepositoryError::storage(error.to_string()))?;
+
+            let id = result.last_insert_rowid();
+
+            pool.close().await;
+
+            Ok::<i64, AddressRepositoryError>(id)
+        })
     }
 }

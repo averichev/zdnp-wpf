@@ -105,6 +105,35 @@ pub unsafe extern "C" fn core_free_string(ptr: *mut c_char) {
 }
 
 #[unsafe(no_mangle)]
+pub unsafe extern "C" fn core_create_address(dto: *const AddressDtoFfi, out_id: *mut i64) -> bool {
+    if let Some(slot) = unsafe { out_id.as_mut() } {
+        *slot = -1;
+    }
+
+    let dto = match unsafe { dto.as_ref() } {
+        Some(dto) => dto,
+        None => return false,
+    };
+
+    let dto = match unsafe { dto.try_into_core() } {
+        Ok(dto) => dto,
+        Err(_) => return false,
+    };
+
+    let repository = zdnp_data::SqliteAddressRepository::new();
+
+    match zdnp_core::create_address(&repository, &dto) {
+        Ok(id) => {
+            if let Some(slot) = unsafe { out_id.as_mut() } {
+                *slot = id;
+            }
+            true
+        }
+        Err(_) => false,
+    }
+}
+
+#[unsafe(no_mangle)]
 pub extern "C" fn core_add(a: i32, b: i32) -> i32 {
     zdnp_core::add_i32(a, b)
 }
