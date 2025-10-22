@@ -35,15 +35,21 @@ public partial class CreateAddressView : UserControl
                 RoomTextBox.Text
             );
 
+            if (!CoreNative.CoreCreateAddress(dto, out var addressId))
+            {
+                ShowMessage("Не удалось сохранить адрес в базе данных.", isError: true);
+                return;
+            }
+
             var formatted = CoreNative.CoreFormatAddress(dto);
 
             if (string.IsNullOrWhiteSpace(formatted))
             {
-                ShowMessage("Не удалось отформатировать адрес.", isError: true);
+                ShowMessage($"Адрес сохранён (ID: {addressId}).", isError: false);
             }
             else
             {
-                ShowMessage(formatted!, isError: false);
+                ShowMessage($"Адрес сохранён (ID: {addressId}): {formatted}", isError: false);
             }
         }
         catch (DllNotFoundException)
@@ -52,7 +58,7 @@ public partial class CreateAddressView : UserControl
         }
         catch (EntryPointNotFoundException)
         {
-            ShowMessage("Метод core_format_address отсутствует в библиотеке zdnp_core.", isError: true);
+            ShowMessage("Не удалось найти экспортируемые методы в библиотеке zdnp_core.", isError: true);
         }
         catch (BadImageFormatException)
         {
