@@ -43,14 +43,23 @@ public partial class CreateAddressView : UserControl
 
             var formatted = CoreNative.CoreFormatAddress(dto);
 
-            if (string.IsNullOrWhiteSpace(formatted))
+            var successMessage = string.IsNullOrWhiteSpace(formatted)
+                ? $"Адрес сохранён (ID: {addressId})."
+                : $"Адрес сохранён (ID: {addressId}): {formatted}";
+
+            if (Window.GetWindow(this) is MainWindow mainWindow)
             {
-                ShowMessage($"Адрес сохранён (ID: {addressId}).", isError: false);
+                MessageBox.Show(
+                    successMessage,
+                    "Адрес сохранён",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                mainWindow.NavigateToAddresses();
+                return;
             }
-            else
-            {
-                ShowMessage($"Адрес сохранён (ID: {addressId}): {formatted}", isError: false);
-            }
+
+            ShowMessage(successMessage, isError: false);
         }
         catch (DllNotFoundException)
         {
