@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace WpfApp1;
 
-internal static partial class CoreNative
+public static partial class CoreNative
 {
     private const string DllName = "zdnp_core"; // resolves to zdnp_core.dll on Windows
 

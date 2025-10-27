@@ -25,7 +25,7 @@ public partial class AddressView : UserControl
         }
     }
 
-    public ObservableCollection<CoreNative.Address> Addresses { get; } = new();
+    public ObservableCollection<CoreNative.Address> Addresses { get; } = [];
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
