@@ -1770,6 +1770,9 @@ dependencies = [
 [[package]]
 name = "zdnp_core"
 version = "0.1.0"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "zdnp_data"
@@ -1784,6 +1787,7 @@ dependencies = [
 name = "zdnp_ffi"
 version = "0.1.0"
 dependencies = [
+ "serde_json",
  "zdnp_core",
  "zdnp_data",
 ]

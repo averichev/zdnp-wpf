@@ -4,7 +4,9 @@ pub trait Migrations {
     fn run(&self) -> MigrationsResult<()>;
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+use serde::Serialize;
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
 pub struct AddressDto {
     pub region_code: Option<String>,
     pub note: Option<String>,
@@ -45,6 +47,20 @@ fn format_address_impl(dto: &AddressDto) -> String {
     parts.join(", ")
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct Address {
+    pub id: i64,
+    pub region_code: String,
+    pub note: Option<String>,
+    pub country: Option<String>,
+    pub district: Option<String>,
+    pub city: Option<String>,
+    pub settlement: Option<String>,
+    pub street: Option<String>,
+    pub building: Option<String>,
+    pub room: Option<String>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AddressRepositoryError {
     Storage(String),
@@ -68,6 +84,7 @@ impl std::error::Error for AddressRepositoryError {}
 
 pub trait AddressRepository {
     fn create(&self, dto: &AddressDto) -> Result<i64, AddressRepositoryError>;
+    fn list(&self) -> Result<Vec<Address>, AddressRepositoryError>;
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -96,6 +113,12 @@ pub fn create_address<R: AddressRepository>(
     repository
         .create(&sanitized)
         .map_err(AddressError::Repository)
+}
+
+pub fn list_addresses<R: AddressRepository>(
+    repository: &R,
+) -> Result<Vec<Address>, AddressRepositoryError> {
+    repository.list()
 }
 
 fn sanitize_address(dto: &AddressDto) -> Result<AddressDto, AddressError> {
@@ -224,6 +247,10 @@ mod tests {
         fn create(&self, dto: &AddressDto) -> Result<i64, AddressRepositoryError> {
             *self.last.borrow_mut() = Some(dto.clone());
             Ok(42)
+        }
+
+        fn list(&self) -> Result<Vec<Address>, AddressRepositoryError> {
+            Ok(Vec::new())
         }
     }
 }

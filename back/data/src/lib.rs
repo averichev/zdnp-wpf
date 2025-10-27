@@ -1,10 +1,10 @@
 use std::fs::{self, File};
 use std::path::PathBuf;
 
-use sqlx::{SqlitePool, migrate::Migrator, sqlite::SqliteConnectOptions};
+use sqlx::{Row, SqlitePool, migrate::Migrator, sqlite::SqliteConnectOptions};
 use tokio::runtime::Runtime;
 use zdnp_core::{
-    AddressDto, AddressRepository, AddressRepositoryError, Migrations, MigrationsResult,
+    Address, AddressDto, AddressRepository, AddressRepositoryError, Migrations, MigrationsResult,
 };
 
 static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
@@ -153,6 +153,51 @@ impl AddressRepository for SqliteAddressRepository {
             pool.close().await;
 
             Ok::<i64, AddressRepositoryError>(id)
+        })
+    }
+
+    fn list(&self) -> Result<Vec<Address>, AddressRepositoryError> {
+        let database_path = self.database_path()?;
+        let runtime =
+            Runtime::new().map_err(|error| AddressRepositoryError::storage(error.to_string()))?;
+
+        runtime.block_on(async move {
+            let options = SqliteConnectOptions::new()
+                .filename(&database_path)
+                .create_if_missing(true);
+
+            let pool = SqlitePool::connect_with(options)
+                .await
+                .map_err(|error| AddressRepositoryError::storage(error.to_string()))?;
+
+            let rows = sqlx::query(
+                r#"SELECT id, region_code, note, country, district, city, settlement, street, building, room
+                   FROM address
+                   ORDER BY id"#,
+            )
+            .fetch_all(&pool)
+            .await
+            .map_err(|error| AddressRepositoryError::storage(error.to_string()))?;
+
+            pool.close().await;
+
+            let addresses = rows
+                .into_iter()
+                .map(|row| Address {
+                    id: row.get("id"),
+                    region_code: row.get("region_code"),
+                    note: row.get("note"),
+                    country: row.get("country"),
+                    district: row.get("district"),
+                    city: row.get("city"),
+                    settlement: row.get("settlement"),
+                    street: row.get("street"),
+                    building: row.get("building"),
+                    room: row.get("room"),
+                })
+                .collect();
+
+            Ok::<Vec<Address>, AddressRepositoryError>(addresses)
         })
     }
 }
