@@ -41,10 +41,15 @@ public partial class MainWindow : Window
         Title = "Справочники — Создание адреса";
     }
 
-    private void OnAddressesClick(object sender, RoutedEventArgs e)
+    public void NavigateToAddresses()
     {
         MainContent.Content = new AddressView();
         Title = "Справочники — Адреса";
+    }
+
+    private void OnAddressesClick(object sender, RoutedEventArgs e)
+    {
+        NavigateToAddresses();
     }
 
     private void OnOrganizationsClick(object sender, RoutedEventArgs e)
