@@ -5,14 +5,44 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
              d:DesignHeight="350" d:DesignWidth="525">
-    <Grid Background="White">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="360" Margin="24">
-            <TextBlock Text="Список адресов" FontSize="24" FontWeight="Bold" TextAlignment="Center"/>
-            <TextBlock Text="Выберите адрес из списка или добавьте новый." TextAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,16"/>
+    <Grid Background="White" Padding="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,16">
             <Button Content="Добавить адрес"
                     Width="200"
-                    HorizontalAlignment="Center"
+                    DockPanel.Dock="Right"
+                    HorizontalAlignment="Right"
                     Click="OnAddAddressClick"/>
-        </StackPanel>
+
+            <StackPanel Orientation="Vertical" DockPanel.Dock="Left" Margin="0,0,16,0">
+                <TextBlock Text="Список адресов" FontSize="24" FontWeight="Bold"/>
+                <TextBlock Text="Выберите адрес из списка или добавьте новый." TextWrapping="Wrap" Margin="0,8,0,0"/>
+            </StackPanel>
+        </DockPanel>
+
+        <DataGrid Grid.Row="1"
+                  ItemsSource="{Binding Addresses}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  IsReadOnly="True"
+                  Margin="0"
+                  SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" SortMemberPath="Id" Width="SizeToHeader"/>
+                <DataGridTextColumn Header="Регион" Binding="{Binding RegionCode}" SortMemberPath="RegionCode" Width="*"/>
+                <DataGridTextColumn Header="Страна" Binding="{Binding Country}" SortMemberPath="Country" Width="*"/>
+                <DataGridTextColumn Header="Регион/область" Binding="{Binding District}" SortMemberPath="District" Width="*"/>
+                <DataGridTextColumn Header="Город" Binding="{Binding City}" SortMemberPath="City" Width="*"/>
+                <DataGridTextColumn Header="Нас. пункт" Binding="{Binding Settlement}" SortMemberPath="Settlement" Width="*"/>
+                <DataGridTextColumn Header="Улица" Binding="{Binding Street}" SortMemberPath="Street" Width="*"/>
+                <DataGridTextColumn Header="Дом" Binding="{Binding Building}" SortMemberPath="Building" Width="SizeToHeader"/>
+                <DataGridTextColumn Header="Квартира" Binding="{Binding Room}" SortMemberPath="Room" Width="SizeToHeader"/>
+                <DataGridTextColumn Header="Примечание" Binding="{Binding Note}" SortMemberPath="Note" Width="2*"/>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </UserControl>

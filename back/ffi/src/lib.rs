@@ -1,6 +1,7 @@
 use std::ffi::{CStr, CString, c_char};
 use std::str::Utf8Error;
 
+use serde_json::to_string;
 use zdnp_core::{self, AddressDto, Migrations};
 
 /// Errors that can occur while converting FFI data into safe Rust structures.
@@ -130,6 +131,26 @@ pub unsafe extern "C" fn core_create_address(dto: *const AddressDtoFfi, out_id: 
             true
         }
         Err(_) => false,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn core_list_addresses() -> *mut c_char {
+    let repository = zdnp_data::SqliteAddressRepository::new();
+
+    let addresses = match zdnp_core::list_addresses(&repository) {
+        Ok(addresses) => addresses,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let json = match to_string(&addresses) {
+        Ok(json) => json,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match CString::new(json) {
+        Ok(c_string) => c_string.into_raw(),
+        Err(_) => std::ptr::null_mut(),
     }
 }
 

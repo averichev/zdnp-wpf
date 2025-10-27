@@ -10,3 +10,4 @@ crate-type = ["cdylib"]
 [dependencies]
 zdnp_core = { path = "../core" }
 zdnp_data = { path = "../data" }
+serde_json = "1.0"

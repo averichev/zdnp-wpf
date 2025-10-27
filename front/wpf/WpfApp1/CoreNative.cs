@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 
 namespace WpfApp1;
 
@@ -30,6 +31,11 @@ internal static partial class CoreNative
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_create_address")]
     private static extern bool core_create_address(ref AddressDtoFfi dto, out long id);
 
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_list_addresses")]
+    private static extern IntPtr core_list_addresses();
+
+    private static readonly JsonSerializerOptions s_jsonOptions = new() { PropertyNameCaseInsensitive = true };
+
     public static string CoreVersion()
     {
         var ptr = core_version();
@@ -39,6 +45,19 @@ internal static partial class CoreNative
 
     public sealed record class AddressDto(
         string? RegionCode,
+        string? Note,
+        string? Country,
+        string? District,
+        string? City,
+        string? Settlement,
+        string? Street,
+        string? Building,
+        string? Room
+    );
+
+    public sealed record class Address(
+        long Id,
+        string RegionCode,
         string? Note,
         string? Country,
         string? District,
@@ -89,6 +108,30 @@ internal static partial class CoreNative
         finally
         {
             FreeAllocations(allocations);
+        }
+    }
+
+    public static IReadOnlyList<Address>? CoreListAddresses()
+    {
+        var ptr = core_list_addresses();
+        if (ptr == IntPtr.Zero)
+        {
+            return null;
+        }
+
+        try
+        {
+            var json = Marshal.PtrToStringUTF8(ptr);
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return Array.Empty<Address>();
+            }
+
+            return JsonSerializer.Deserialize<Address[]>(json, s_jsonOptions) ?? Array.Empty<Address>();
+        }
+        finally
+        {
+            core_free_string(ptr);
         }
     }
 
