@@ -34,7 +34,7 @@ public static partial class CoreNative
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_list_addresses")]
     private static extern IntPtr core_list_addresses();
 
-    private static readonly JsonSerializerOptions s_jsonOptions = new() { PropertyNameCaseInsensitive = true };
+    private static readonly JsonSerializerOptions s_jsonOptions = new() { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
 
     public static string CoreVersion()
     {
@@ -55,7 +55,7 @@ public static partial class CoreNative
         string? Room
     );
 
-    public sealed record class Address(
+    public sealed record Address(
         long Id,
         string RegionCode,
         string? Note,
@@ -124,10 +124,11 @@ public static partial class CoreNative
             var json = Marshal.PtrToStringUTF8(ptr);
             if (string.IsNullOrWhiteSpace(json))
             {
-                return Array.Empty<Address>();
+                return [];
             }
 
-            return JsonSerializer.Deserialize<Address[]>(json, s_jsonOptions) ?? Array.Empty<Address>();
+            var list = JsonSerializer.Deserialize<Address[]>(json, s_jsonOptions);
+            return list ?? [];
         }
         finally
         {
