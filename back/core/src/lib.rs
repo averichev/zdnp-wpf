@@ -446,6 +446,146 @@ fn sanitize_entrepreneur(dto: &EntrepreneurDto) -> Result<EntrepreneurDto, Entre
     })
 }
 
+// ---------------- Person Core API ----------------
+
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct PersonDto {
+    pub name: Option<String>,
+    pub patronymic: Option<String>,
+    pub surname: Option<String>,
+    pub snils: Option<String>,
+    pub email: Option<String>,
+    pub address_id: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PersonRepositoryError {
+    Storage(String),
+}
+
+impl PersonRepositoryError {
+    pub fn storage<S: Into<String>>(message: S) -> Self {
+        Self::Storage(message.into())
+    }
+}
+
+impl std::fmt::Display for PersonRepositoryError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Storage(message) => f.write_str(message),
+        }
+    }
+}
+
+impl std::error::Error for PersonRepositoryError {}
+
+pub trait PersonRepository {
+    fn create(&self, dto: &PersonDto) -> Result<i64, PersonRepositoryError>;
+    fn list(&self) -> Result<Vec<Person>, PersonRepositoryError>;
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PersonError {
+    MissingName,
+    MissingSurname,
+    MissingSnils,
+    MissingEmail,
+    Repository(PersonRepositoryError),
+}
+
+impl std::fmt::Display for PersonError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::MissingName => f.write_str("Name is required"),
+            Self::MissingSurname => f.write_str("Surname is required"),
+            Self::MissingSnils => f.write_str("SNILS is required"),
+            Self::MissingEmail => f.write_str("Email is required"),
+            Self::Repository(error) => write!(f, "Repository error: {error}"),
+        }
+    }
+}
+
+impl std::error::Error for PersonError {}
+
+pub fn create_person<R: PersonRepository>(
+    repository: &R,
+    dto: &PersonDto,
+) -> Result<i64, PersonError> {
+    let sanitized = sanitize_person(dto)?;
+
+    repository
+        .create(&sanitized)
+        .map_err(PersonError::Repository)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct Person {
+    pub id: i64,
+    pub name: String,
+    pub patronymic: Option<String>,
+    pub surname: String,
+    pub snils: String,
+    pub email: String,
+    pub address_id: i64,
+}
+
+pub fn list_persons<R: PersonRepository>(
+    repository: &R,
+) -> Result<Vec<Person>, PersonRepositoryError> {
+    repository.list()
+}
+
+fn sanitize_person(dto: &PersonDto) -> Result<PersonDto, PersonError> {
+    fn sanitize_field(value: &Option<String>) -> Option<String> {
+        value
+            .as_ref()
+            .map(|v| v.trim())
+            .filter(|v| !v.is_empty())
+            .map(|v| v.to_string())
+    }
+
+    let name = dto
+        .name
+        .as_ref()
+        .map(|v| v.trim())
+        .filter(|v| !v.is_empty())
+        .map(|v| v.to_string())
+        .ok_or(PersonError::MissingName)?;
+
+    let surname = dto
+        .surname
+        .as_ref()
+        .map(|v| v.trim())
+        .filter(|v| !v.is_empty())
+        .map(|v| v.to_string())
+        .ok_or(PersonError::MissingSurname)?;
+
+    let snils = dto
+        .snils
+        .as_ref()
+        .map(|v| v.trim())
+        .filter(|v| !v.is_empty())
+        .map(|v| v.to_string())
+        .ok_or(PersonError::MissingSnils)?;
+
+    let email = dto
+        .email
+        .as_ref()
+        .map(|v| v.trim())
+        .filter(|v| !v.is_empty())
+        .map(|v| v.to_string())
+        .ok_or(PersonError::MissingEmail)?;
+
+    Ok(PersonDto {
+        name: Some(name),
+        patronymic: sanitize_field(&dto.patronymic),
+        surname: Some(surname),
+        snils: Some(snils),
+        email: Some(email),
+        address_id: dto.address_id,
+    })
+}
+
 // Internal Rust API (can be used from Rust unit tests or other Rust crates if needed)
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
