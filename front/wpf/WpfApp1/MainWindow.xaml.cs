@@ -47,6 +47,18 @@ public partial class MainWindow : Window
         Title = "Справочники — Адреса";
     }
 
+    public void NavigateToIndividualEntrepreneurs()
+    {
+        MainContent.Content = new IndividualEntrepreneursView();
+        Title = "Справочники — Индивидуальные предприниматели";
+    }
+
+    public void NavigateToCreateIndividualEntrepreneur()
+    {
+        MainContent.Content = new CreateIndividualEntrepreneurView();
+        Title = "Справочники — Создание индивидуального предпринимателя";
+    }
+
     private void OnAddressesClick(object sender, RoutedEventArgs e)
     {
         NavigateToAddresses();
@@ -65,7 +77,6 @@ public partial class MainWindow : Window
 
     private void OnIndividualEntrepreneursClick(object sender, RoutedEventArgs e)
     {
-        MainContent.Content = new IndividualEntrepreneursView();
-        Title = "Справочники — Индивидуальные предприниматели";
+        NavigateToIndividualEntrepreneurs();
     }
 }

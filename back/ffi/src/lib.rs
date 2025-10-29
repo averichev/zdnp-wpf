@@ -2,7 +2,7 @@ use std::ffi::{CStr, CString, c_char};
 use std::str::Utf8Error;
 
 use serde_json::to_string;
-use zdnp_core::{self, AddressDto, Migrations, OrganizationDto};
+use zdnp_core::{self, AddressDto, EntrepreneurDto, Migrations, OrganizationDto};
 
 /// Errors that can occur while converting FFI data into safe Rust structures.
 #[derive(Debug)]
@@ -107,6 +107,47 @@ impl OrganizationDtoFfi {
     }
 }
 
+#[repr(C)]
+pub struct EntrepreneurDtoFfi {
+    pub surname: *const c_char,
+    pub name: *const c_char,
+    pub patronymic: *const c_char,
+    pub ogrnip: *const c_char,
+    pub inn: *const c_char,
+    pub address_id: i64,
+    pub email: *const c_char,
+}
+
+impl EntrepreneurDtoFfi {
+    /// # Safety
+    /// All pointers must either be null or reference valid null-terminated UTF-8 strings.
+    unsafe fn try_into_core(&self) -> Result<EntrepreneurDto, FfiConversionError> {
+        fn read_field(ptr: *const c_char) -> Result<Option<String>, FfiConversionError> {
+            if ptr.is_null() {
+                return Ok(None);
+            }
+
+            let c_str = unsafe { CStr::from_ptr(ptr) };
+            let utf8 = c_str.to_str()?;
+            if utf8.is_empty() {
+                Ok(None)
+            } else {
+                Ok(Some(utf8.to_owned()))
+            }
+        }
+
+        Ok(EntrepreneurDto {
+            surname: read_field(self.surname)?,
+            name: read_field(self.name)?,
+            patronymic: read_field(self.patronymic)?,
+            ogrnip: read_field(self.ogrnip)?,
+            inn: read_field(self.inn)?,
+            address_id: self.address_id,
+            email: read_field(self.email)?,
+        })
+    }
+}
+
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn core_create_organization(
     dto: *const OrganizationDtoFfi,
@@ -128,6 +169,37 @@ pub unsafe extern "C" fn core_create_organization(
     let repository = zdnp_data::SqliteOrganizationRepository::new();
 
     match zdnp_core::create_organization(&repository, &dto) {
+        Ok(id) => {
+            if let Some(slot) = unsafe { out_id.as_mut() } {
+                *slot = id;
+            }
+            true
+        }
+        Err(_) => false,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn core_create_entrepreneur(
+    dto: *const EntrepreneurDtoFfi,
+    out_id: *mut i64,
+) -> bool {
+    if let Some(slot) = unsafe { out_id.as_mut() } {
+        *slot = -1;
+    }
+
+    let dto = match unsafe { dto.as_ref() } {
+        Some(dto) => dto,
+        None => return false,
+    };
+    let dto = match unsafe { dto.try_into_core() } {
+        Ok(dto) => dto,
+        Err(_) => return false,
+    };
+
+    let repository = zdnp_data::SqliteEntrepreneurRepository::new();
+
+    match zdnp_core::create_entrepreneur(&repository, &dto) {
         Ok(id) => {
             if let Some(slot) = unsafe { out_id.as_mut() } {
                 *slot = id;
@@ -237,6 +309,26 @@ pub unsafe extern "C" fn core_list_organizations() -> *mut c_char {
     };
 
     let json = match to_string(&organizations) {
+        Ok(json) => json,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match CString::new(json) {
+        Ok(c_string) => c_string.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn core_list_entrepreneurs() -> *mut c_char {
+    let repository = zdnp_data::SqliteEntrepreneurRepository::new();
+
+    let entrepreneurs = match zdnp_core::list_entrepreneurs(&repository) {
+        Ok(entrepreneurs) => entrepreneurs,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let json = match to_string(&entrepreneurs) {
         Ok(json) => json,
         Err(_) => return std::ptr::null_mut(),
     };

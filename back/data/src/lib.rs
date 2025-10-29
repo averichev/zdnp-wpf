@@ -4,7 +4,8 @@ use std::path::PathBuf;
 use sqlx::{Row, SqlitePool, migrate::Migrator, sqlite::SqliteConnectOptions};
 use tokio::runtime::Runtime;
 use zdnp_core::{
-    Address, AddressDto, AddressRepository, AddressRepositoryError, Migrations, MigrationsResult,
+    Address, AddressDto, AddressRepository, AddressRepositoryError, Entrepreneur, EntrepreneurDto,
+    EntrepreneurRepository, EntrepreneurRepositoryError, Migrations, MigrationsResult,
     Organization, OrganizationDto, OrganizationRepository, OrganizationRepositoryError,
 };
 
@@ -371,6 +372,153 @@ impl OrganizationRepository for SqliteOrganizationRepository {
                 .collect();
 
             Ok::<Vec<Organization>, OrganizationRepositoryError>(organizations)
+        })
+    }
+}
+
+// ---------------- Entrepreneur Data Repository ----------------
+pub struct SqliteEntrepreneurRepository {
+    database_file_name: String,
+}
+
+impl SqliteEntrepreneurRepository {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_file_name<S: Into<String>>(file_name: S) -> Self {
+        Self {
+            database_file_name: file_name.into(),
+        }
+    }
+
+    fn database_path(&self) -> Result<PathBuf, EntrepreneurRepositoryError> {
+        let executable = std::env::current_exe()
+            .map_err(|error| EntrepreneurRepositoryError::storage(error.to_string()))?;
+        let directory = executable.parent().ok_or_else(|| {
+            EntrepreneurRepositoryError::storage("Failed to determine application directory")
+        })?;
+
+        Ok(directory.join(&self.database_file_name))
+    }
+}
+
+impl Default for SqliteEntrepreneurRepository {
+    fn default() -> Self {
+        Self {
+            database_file_name: DEFAULT_DATABASE_FILE_NAME.to_string(),
+        }
+    }
+}
+
+impl EntrepreneurRepository for SqliteEntrepreneurRepository {
+    fn create(&self, dto: &EntrepreneurDto) -> Result<i64, EntrepreneurRepositoryError> {
+        let database_path = self.database_path()?;
+        let runtime = Runtime::new()
+            .map_err(|error| EntrepreneurRepositoryError::storage(error.to_string()))?;
+
+        runtime.block_on(async move {
+            let options = SqliteConnectOptions::new()
+                .filename(&database_path)
+                .create_if_missing(true);
+
+            let pool = SqlitePool::connect_with(options)
+                .await
+                .map_err(|error| EntrepreneurRepositoryError::storage(error.to_string()))?;
+
+            let surname = dto
+                .surname
+                .as_deref()
+                .ok_or_else(|| EntrepreneurRepositoryError::storage("Surname is required"))?;
+            let name = dto
+                .name
+                .as_deref()
+                .ok_or_else(|| EntrepreneurRepositoryError::storage("Name is required"))?;
+            let ogrnip = dto
+                .ogrnip
+                .as_deref()
+                .ok_or_else(|| EntrepreneurRepositoryError::storage("OGRNIP is required"))?;
+            let inn = dto
+                .inn
+                .as_deref()
+                .ok_or_else(|| EntrepreneurRepositoryError::storage("INN is required"))?;
+
+            let ogrnip_int: i64 = ogrnip.trim().parse().map_err(|error| {
+                EntrepreneurRepositoryError::storage(format!("Invalid OGRNIP: {error}"))
+            })?;
+            let inn_int: i64 = inn.trim().parse().map_err(|error| {
+                EntrepreneurRepositoryError::storage(format!("Invalid INN: {error}"))
+            })?;
+
+            let result = sqlx::query(
+                r#"INSERT INTO entrepreneur (
+                    surname, name, patronymic, ogrnip, inn, address_id, email
+                ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)"#,
+            )
+            .bind(surname)
+            .bind(name)
+            .bind(dto.patronymic.as_deref())
+            .bind(ogrnip_int)
+            .bind(inn_int)
+            .bind(dto.address_id)
+            .bind(dto.email.as_deref())
+            .execute(&pool)
+            .await
+            .map_err(|error| EntrepreneurRepositoryError::storage(error.to_string()))?;
+
+            let id = result.last_insert_rowid();
+
+            pool.close().await;
+
+            Ok::<i64, EntrepreneurRepositoryError>(id)
+        })
+    }
+
+    fn list(&self) -> Result<Vec<Entrepreneur>, EntrepreneurRepositoryError> {
+        let database_path = self.database_path()?;
+        let runtime = Runtime::new()
+            .map_err(|error| EntrepreneurRepositoryError::storage(error.to_string()))?;
+
+        runtime.block_on(async move {
+            let options = SqliteConnectOptions::new()
+                .filename(&database_path)
+                .create_if_missing(true);
+
+            let pool = SqlitePool::connect_with(options)
+                .await
+                .map_err(|error| EntrepreneurRepositoryError::storage(error.to_string()))?;
+
+            let rows = sqlx::query(
+                r#"SELECT id, surname, name, patronymic, ogrnip, inn, address_id, email
+                   FROM entrepreneur
+                   ORDER BY id"#,
+            )
+            .fetch_all(&pool)
+            .await
+            .map_err(|error| EntrepreneurRepositoryError::storage(error.to_string()))?;
+
+            pool.close().await;
+
+            let entrepreneurs = rows
+                .into_iter()
+                .map(|row| {
+                    let ogrnip: i64 = row.get("ogrnip");
+                    let inn: i64 = row.get("inn");
+
+                    Entrepreneur {
+                        id: row.get("id"),
+                        surname: row.get("surname"),
+                        name: row.get("name"),
+                        patronymic: row.get("patronymic"),
+                        ogrnip: ogrnip.to_string(),
+                        inn: inn.to_string(),
+                        address_id: row.get("address_id"),
+                        email: row.get("email"),
+                    }
+                })
+                .collect();
+
+            Ok::<Vec<Entrepreneur>, EntrepreneurRepositoryError>(entrepreneurs)
         })
     }
 }

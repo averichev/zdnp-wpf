@@ -305,6 +305,147 @@ fn sanitize_organization(dto: &OrganizationDto) -> Result<OrganizationDto, Organ
     })
 }
 
+// ---------------- Entrepreneur Core API ----------------
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct EntrepreneurDto {
+    pub surname: Option<String>,
+    pub name: Option<String>,
+    pub patronymic: Option<String>,
+    pub ogrnip: Option<String>,
+    pub inn: Option<String>,
+    pub address_id: i64,
+    pub email: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EntrepreneurRepositoryError {
+    Storage(String),
+}
+
+impl EntrepreneurRepositoryError {
+    pub fn storage<S: Into<String>>(message: S) -> Self {
+        Self::Storage(message.into())
+    }
+}
+
+impl std::fmt::Display for EntrepreneurRepositoryError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Storage(message) => f.write_str(message),
+        }
+    }
+}
+
+impl std::error::Error for EntrepreneurRepositoryError {}
+
+pub trait EntrepreneurRepository {
+    fn create(&self, dto: &EntrepreneurDto) -> Result<i64, EntrepreneurRepositoryError>;
+    fn list(&self) -> Result<Vec<Entrepreneur>, EntrepreneurRepositoryError>;
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EntrepreneurError {
+    MissingSurname,
+    MissingName,
+    MissingOgrnip,
+    MissingInn,
+    Repository(EntrepreneurRepositoryError),
+}
+
+impl std::fmt::Display for EntrepreneurError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::MissingSurname => f.write_str("Surname is required"),
+            Self::MissingName => f.write_str("Name is required"),
+            Self::MissingOgrnip => f.write_str("OGRNIP is required"),
+            Self::MissingInn => f.write_str("INN is required"),
+            Self::Repository(error) => write!(f, "Repository error: {error}"),
+        }
+    }
+}
+
+impl std::error::Error for EntrepreneurError {}
+
+pub fn create_entrepreneur<R: EntrepreneurRepository>(
+    repository: &R,
+    dto: &EntrepreneurDto,
+) -> Result<i64, EntrepreneurError> {
+    let sanitized = sanitize_entrepreneur(dto)?;
+    repository
+        .create(&sanitized)
+        .map_err(EntrepreneurError::Repository)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct Entrepreneur {
+    pub id: i64,
+    pub surname: String,
+    pub name: String,
+    pub patronymic: Option<String>,
+    pub ogrnip: String,
+    pub inn: String,
+    pub address_id: i64,
+    pub email: Option<String>,
+}
+
+pub fn list_entrepreneurs<R: EntrepreneurRepository>(
+    repository: &R,
+) -> Result<Vec<Entrepreneur>, EntrepreneurRepositoryError> {
+    repository.list()
+}
+
+fn sanitize_entrepreneur(dto: &EntrepreneurDto) -> Result<EntrepreneurDto, EntrepreneurError> {
+    fn sanitize_field(value: &Option<String>) -> Option<String> {
+        value
+            .as_ref()
+            .map(|v| v.trim())
+            .filter(|v| !v.is_empty())
+            .map(|v| v.to_string())
+    }
+
+    let surname = dto
+        .surname
+        .as_ref()
+        .map(|v| v.trim())
+        .filter(|v| !v.is_empty())
+        .map(|v| v.to_string())
+        .ok_or(EntrepreneurError::MissingSurname)?;
+
+    let name = dto
+        .name
+        .as_ref()
+        .map(|v| v.trim())
+        .filter(|v| !v.is_empty())
+        .map(|v| v.to_string())
+        .ok_or(EntrepreneurError::MissingName)?;
+
+    let ogrnip = dto
+        .ogrnip
+        .as_ref()
+        .map(|v| v.trim())
+        .filter(|v| !v.is_empty())
+        .map(|v| v.to_string())
+        .ok_or(EntrepreneurError::MissingOgrnip)?;
+
+    let inn = dto
+        .inn
+        .as_ref()
+        .map(|v| v.trim())
+        .filter(|v| !v.is_empty())
+        .map(|v| v.to_string())
+        .ok_or(EntrepreneurError::MissingInn)?;
+
+    Ok(EntrepreneurDto {
+        surname: Some(surname),
+        name: Some(name),
+        patronymic: sanitize_field(&dto.patronymic),
+        ogrnip: Some(ogrnip),
+        inn: Some(inn),
+        address_id: dto.address_id,
+        email: sanitize_field(&dto.email),
+    })
+}
+
 // Internal Rust API (can be used from Rust unit tests or other Rust crates if needed)
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
