@@ -40,6 +40,9 @@ public static partial class CoreNative
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_list_entrepreneurs")]
     private static extern IntPtr core_list_entrepreneurs();
 
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_list_persons")]
+    private static extern IntPtr core_list_persons();
+
     private static readonly JsonSerializerOptions s_jsonOptions = new() { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
 
     // Organization interop
@@ -48,6 +51,9 @@ public static partial class CoreNative
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_create_entrepreneur")]
     private static extern bool core_create_entrepreneur(ref EntrepreneurDtoFfi dto, out long id);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_create_person")]
+    private static extern bool core_create_person(ref PersonDtoFfi dto, out long id);
 
     public static string CoreVersion()
     {
@@ -112,6 +118,25 @@ public static partial class CoreNative
         string Inn,
         long AddressId,
         string? Email
+    );
+
+    public sealed record class PersonDto(
+        string Name,
+        string? Patronymic,
+        string Surname,
+        string Snils,
+        string Email,
+        long AddressId
+    );
+
+    public sealed record Person(
+        long Id,
+        string Name,
+        string? Patronymic,
+        string Surname,
+        string Snils,
+        string Email,
+        long AddressId
     );
 
     public static string? CoreFormatAddress(AddressDto dto)
@@ -224,6 +249,31 @@ public static partial class CoreNative
             }
 
             var list = JsonSerializer.Deserialize<Entrepreneur[]>(json, s_jsonOptions);
+            return list ?? [];
+        }
+        finally
+        {
+            core_free_string(ptr);
+        }
+    }
+
+    public static IReadOnlyList<Person>? CoreListPersons()
+    {
+        var ptr = core_list_persons();
+        if (ptr == IntPtr.Zero)
+        {
+            return null;
+        }
+
+        try
+        {
+            var json = Marshal.PtrToStringUTF8(ptr);
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return [];
+            }
+
+            var list = JsonSerializer.Deserialize<Person[]>(json, s_jsonOptions);
             return list ?? [];
         }
         finally
@@ -374,6 +424,45 @@ public static partial class CoreNative
         try
         {
             return core_create_entrepreneur(ref ffi, out id);
+        }
+        finally
+        {
+            FreeAllocations(allocations);
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct PersonDtoFfi
+    {
+        public IntPtr Name;
+        public IntPtr Patronymic;
+        public IntPtr Surname;
+        public IntPtr Snils;
+        public IntPtr Email;
+        public long AddressId;
+    }
+
+    private static PersonDtoFfi CreatePersonDtoFfi(PersonDto dto, List<IntPtr> allocations)
+    {
+        return new PersonDtoFfi
+        {
+            Name = AllocateUtf8(dto.Name, allocations),
+            Patronymic = AllocateUtf8(dto.Patronymic, allocations),
+            Surname = AllocateUtf8(dto.Surname, allocations),
+            Snils = AllocateUtf8(dto.Snils, allocations),
+            Email = AllocateUtf8(dto.Email, allocations),
+            AddressId = dto.AddressId,
+        };
+    }
+
+    public static bool CoreCreatePerson(PersonDto dto, out long id)
+    {
+        var allocations = new List<IntPtr>(5);
+        var ffi = CreatePersonDtoFfi(dto, allocations);
+
+        try
+        {
+            return core_create_person(ref ffi, out id);
         }
         finally
         {

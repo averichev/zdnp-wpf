@@ -6,7 +6,8 @@ use tokio::runtime::Runtime;
 use zdnp_core::{
     Address, AddressDto, AddressRepository, AddressRepositoryError, Entrepreneur, EntrepreneurDto,
     EntrepreneurRepository, EntrepreneurRepositoryError, Migrations, MigrationsResult,
-    Organization, OrganizationDto, OrganizationRepository, OrganizationRepositoryError,
+    Organization, OrganizationDto, OrganizationRepository, OrganizationRepositoryError, Person,
+    PersonDto, PersonRepository, PersonRepositoryError,
 };
 
 static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
@@ -519,6 +520,148 @@ impl EntrepreneurRepository for SqliteEntrepreneurRepository {
                 .collect();
 
             Ok::<Vec<Entrepreneur>, EntrepreneurRepositoryError>(entrepreneurs)
+        })
+    }
+}
+
+// ---------------- Person Data Repository ----------------
+
+pub struct SqlitePersonRepository {
+    database_file_name: String,
+}
+
+impl SqlitePersonRepository {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_file_name<S: Into<String>>(file_name: S) -> Self {
+        Self {
+            database_file_name: file_name.into(),
+        }
+    }
+
+    fn database_path(&self) -> Result<PathBuf, PersonRepositoryError> {
+        let executable = std::env::current_exe()
+            .map_err(|error| PersonRepositoryError::storage(error.to_string()))?;
+        let directory = executable.parent().ok_or_else(|| {
+            PersonRepositoryError::storage("Failed to determine application directory")
+        })?;
+
+        Ok(directory.join(&self.database_file_name))
+    }
+}
+
+impl Default for SqlitePersonRepository {
+    fn default() -> Self {
+        Self {
+            database_file_name: DEFAULT_DATABASE_FILE_NAME.to_string(),
+        }
+    }
+}
+
+impl PersonRepository for SqlitePersonRepository {
+    fn create(&self, dto: &PersonDto) -> Result<i64, PersonRepositoryError> {
+        let database_path = self.database_path()?;
+        let runtime =
+            Runtime::new().map_err(|error| PersonRepositoryError::storage(error.to_string()))?;
+
+        runtime.block_on(async move {
+            let options = SqliteConnectOptions::new()
+                .filename(&database_path)
+                .create_if_missing(true);
+
+            let pool = SqlitePool::connect_with(options)
+                .await
+                .map_err(|error| PersonRepositoryError::storage(error.to_string()))?;
+
+            let name = dto
+                .name
+                .as_deref()
+                .ok_or_else(|| PersonRepositoryError::storage("Name is required"))?;
+            let surname = dto
+                .surname
+                .as_deref()
+                .ok_or_else(|| PersonRepositoryError::storage("Surname is required"))?;
+            let snils = dto
+                .snils
+                .as_deref()
+                .ok_or_else(|| PersonRepositoryError::storage("SNILS is required"))?;
+            let email = dto
+                .email
+                .as_deref()
+                .ok_or_else(|| PersonRepositoryError::storage("Email is required"))?;
+
+            let snils_int: i64 = snils.trim().parse().map_err(|error| {
+                PersonRepositoryError::storage(format!("Invalid SNILS: {error}"))
+            })?;
+
+            let result = sqlx::query(
+                r#"INSERT INTO person (
+                    name, patronymic, surname, snils, email, address_id
+                ) VALUES (?1, ?2, ?3, ?4, ?5, ?6)"#,
+            )
+            .bind(name)
+            .bind(dto.patronymic.as_deref())
+            .bind(surname)
+            .bind(snils_int)
+            .bind(email)
+            .bind(dto.address_id)
+            .execute(&pool)
+            .await
+            .map_err(|error| PersonRepositoryError::storage(error.to_string()))?;
+
+            let id = result.last_insert_rowid();
+
+            pool.close().await;
+
+            Ok::<i64, PersonRepositoryError>(id)
+        })
+    }
+
+    fn list(&self) -> Result<Vec<Person>, PersonRepositoryError> {
+        let database_path = self.database_path()?;
+        let runtime =
+            Runtime::new().map_err(|error| PersonRepositoryError::storage(error.to_string()))?;
+
+        runtime.block_on(async move {
+            let options = SqliteConnectOptions::new()
+                .filename(&database_path)
+                .create_if_missing(true);
+
+            let pool = SqlitePool::connect_with(options)
+                .await
+                .map_err(|error| PersonRepositoryError::storage(error.to_string()))?;
+
+            let rows = sqlx::query(
+                r#"SELECT id, name, patronymic, surname, snils, email, address_id
+                   FROM person
+                   ORDER BY id"#,
+            )
+            .fetch_all(&pool)
+            .await
+            .map_err(|error| PersonRepositoryError::storage(error.to_string()))?;
+
+            pool.close().await;
+
+            let persons = rows
+                .into_iter()
+                .map(|row| {
+                    let snils: i64 = row.get("snils");
+
+                    Person {
+                        id: row.get("id"),
+                        name: row.get("name"),
+                        patronymic: row.get("patronymic"),
+                        surname: row.get("surname"),
+                        snils: snils.to_string(),
+                        email: row.get("email"),
+                        address_id: row.get("address_id"),
+                    }
+                })
+                .collect();
+
+            Ok::<Vec<Person>, PersonRepositoryError>(persons)
         })
     }
 }
