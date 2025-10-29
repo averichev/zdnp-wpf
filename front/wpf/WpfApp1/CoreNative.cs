@@ -36,6 +36,10 @@ public static partial class CoreNative
 
     private static readonly JsonSerializerOptions s_jsonOptions = new() { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
 
+    // Organization interop
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_create_organization")]
+    private static extern bool core_create_organization(ref OrganizationDtoFfi dto, out long id);
+
     public static string CoreVersion()
     {
         var ptr = core_version();
@@ -187,5 +191,60 @@ public static partial class CoreNative
         public IntPtr Street;
         public IntPtr Building;
         public IntPtr Room;
+    }
+
+    // -------- Organization DTO/FFI --------
+    public sealed record class OrganizationDto(
+        string FullName,
+        string AbbreviatedName,
+        string? Ogrn,
+        string? Rafp,
+        string Inn,
+        string Kpp,
+        long AddressId,
+        string Email
+    );
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct OrganizationDtoFfi
+    {
+        public IntPtr FullName;
+        public IntPtr AbbreviatedName;
+        public IntPtr Ogrn;
+        public IntPtr Rafp;
+        public IntPtr Inn;
+        public IntPtr Kpp;
+        public long AddressId;
+        public IntPtr Email;
+    }
+
+    private static OrganizationDtoFfi CreateOrganizationDtoFfi(OrganizationDto dto, List<IntPtr> allocations)
+    {
+        return new OrganizationDtoFfi
+        {
+            FullName = AllocateUtf8(dto.FullName, allocations),
+            AbbreviatedName = AllocateUtf8(dto.AbbreviatedName, allocations),
+            Ogrn = AllocateUtf8(dto.Ogrn, allocations),
+            Rafp = AllocateUtf8(dto.Rafp, allocations),
+            Inn = AllocateUtf8(dto.Inn, allocations),
+            Kpp = AllocateUtf8(dto.Kpp, allocations),
+            AddressId = dto.AddressId,
+            Email = AllocateUtf8(dto.Email, allocations)
+        };
+    }
+
+    public static bool CoreCreateOrganization(OrganizationDto dto, out long id)
+    {
+        var allocations = new List<IntPtr>(7);
+        var ffi = CreateOrganizationDtoFfi(dto, allocations);
+
+        try
+        {
+            return core_create_organization(ref ffi, out id);
+        }
+        finally
+        {
+            FreeAllocations(allocations);
+        }
     }
 }

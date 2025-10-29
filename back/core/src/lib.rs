@@ -151,6 +151,140 @@ fn sanitize_address(dto: &AddressDto) -> Result<AddressDto, AddressError> {
     })
 }
 
+// ---------------- Organization Core API ----------------
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct OrganizationDto {
+    pub full_name: Option<String>,
+    pub abbreviated_name: Option<String>,
+    pub ogrn: Option<String>,
+    pub rafp: Option<String>,
+    pub inn: Option<String>,
+    pub kpp: Option<String>,
+    pub address_id: i64,
+    pub email: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum OrganizationRepositoryError {
+    Storage(String),
+}
+
+impl OrganizationRepositoryError {
+    pub fn storage<S: Into<String>>(message: S) -> Self {
+        Self::Storage(message.into())
+    }
+}
+
+impl std::fmt::Display for OrganizationRepositoryError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Storage(message) => f.write_str(message),
+        }
+    }
+}
+
+impl std::error::Error for OrganizationRepositoryError {}
+
+pub trait OrganizationRepository {
+    fn create(&self, dto: &OrganizationDto) -> Result<i64, OrganizationRepositoryError>;
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum OrganizationError {
+    MissingFullName,
+    MissingAbbreviatedName,
+    MissingInn,
+    MissingKpp,
+    MissingEmail,
+    Repository(OrganizationRepositoryError),
+}
+
+impl std::fmt::Display for OrganizationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::MissingFullName => f.write_str("Full name is required"),
+            Self::MissingAbbreviatedName => f.write_str("Abbreviated name is required"),
+            Self::MissingInn => f.write_str("INN is required"),
+            Self::MissingKpp => f.write_str("KPP is required"),
+            Self::MissingEmail => f.write_str("Email is required"),
+            Self::Repository(error) => write!(f, "Repository error: {error}"),
+        }
+    }
+}
+
+impl std::error::Error for OrganizationError {}
+
+pub fn create_organization<R: OrganizationRepository>(
+    repository: &R,
+    dto: &OrganizationDto,
+) -> Result<i64, OrganizationError> {
+    let sanitized = sanitize_organization(dto)?;
+    repository
+        .create(&sanitized)
+        .map_err(OrganizationError::Repository)
+}
+
+fn sanitize_organization(dto: &OrganizationDto) -> Result<OrganizationDto, OrganizationError> {
+    fn sanitize_field(value: &Option<String>) -> Option<String> {
+        value
+            .as_ref()
+            .map(|v| v.trim())
+            .filter(|v| !v.is_empty())
+            .map(|v| v.to_string())
+    }
+
+    let full_name = dto
+        .full_name
+        .as_ref()
+        .map(|v| v.trim())
+        .filter(|v| !v.is_empty())
+        .map(|v| v.to_string())
+        .ok_or(OrganizationError::MissingFullName)?;
+
+    let abbreviated_name = dto
+        .abbreviated_name
+        .as_ref()
+        .map(|v| v.trim())
+        .filter(|v| !v.is_empty())
+        .map(|v| v.to_string())
+        .ok_or(OrganizationError::MissingAbbreviatedName)?;
+
+    let inn = dto
+        .inn
+        .as_ref()
+        .map(|v| v.trim())
+        .filter(|v| !v.is_empty())
+        .map(|v| v.to_string())
+        .ok_or(OrganizationError::MissingInn)?;
+
+    let kpp = dto
+        .kpp
+        .as_ref()
+        .map(|v| v.trim())
+        .filter(|v| !v.is_empty())
+        .map(|v| v.to_string())
+        .ok_or(OrganizationError::MissingKpp)?;
+
+    let email = dto
+        .email
+        .as_ref()
+        .map(|v| v.trim())
+        .filter(|v| !v.is_empty())
+        .map(|v| v.to_string())
+        .ok_or(OrganizationError::MissingEmail)?;
+
+    Ok(OrganizationDto {
+        full_name: Some(full_name),
+        abbreviated_name: Some(abbreviated_name),
+        ogrn: sanitize_field(&dto.ogrn),
+        rafp: sanitize_field(&dto.rafp),
+        inn: Some(inn),
+        kpp: Some(kpp),
+        address_id: dto.address_id,
+        email: Some(email),
+    })
+}
+
 // Internal Rust API (can be used from Rust unit tests or other Rust crates if needed)
 pub fn add(left: u64, right: u64) -> u64 {
     left + right

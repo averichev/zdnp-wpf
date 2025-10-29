@@ -2,7 +2,7 @@ use std::ffi::{CStr, CString, c_char};
 use std::str::Utf8Error;
 
 use serde_json::to_string;
-use zdnp_core::{self, AddressDto, Migrations};
+use zdnp_core::{self, AddressDto, Migrations, OrganizationDto};
 
 /// Errors that can occur while converting FFI data into safe Rust structures.
 #[derive(Debug)]
@@ -62,6 +62,62 @@ impl AddressDtoFfi {
             building: read_field(self.building)?,
             room: read_field(self.room)?,
         })
+    }
+}
+
+#[repr(C)]
+pub struct OrganizationDtoFfi {
+    pub full_name: *const c_char,
+    pub abbreviated_name: *const c_char,
+    pub ogrn: *const c_char,
+    pub rafp: *const c_char,
+    pub inn: *const c_char,
+    pub kpp: *const c_char,
+    pub address_id: i64,
+    pub email: *const c_char,
+}
+
+impl OrganizationDtoFfi {
+    /// # Safety
+    /// All pointers must either be null or reference valid null-terminated UTF-8 strings.
+    unsafe fn try_into_core(&self) -> Result<OrganizationDto, FfiConversionError> {
+        fn read_field(ptr: *const c_char) -> Result<Option<String>, FfiConversionError> {
+            if ptr.is_null() {
+                return Ok(None);
+            }
+            let c_str = unsafe { CStr::from_ptr(ptr) };
+            let utf8 = c_str.to_str()?;
+            if utf8.is_empty() { Ok(None) } else { Ok(Some(utf8.to_owned())) }
+        }
+
+        Ok(OrganizationDto {
+            full_name: read_field(self.full_name)?,
+            abbreviated_name: read_field(self.abbreviated_name)?,
+            ogrn: read_field(self.ogrn)?,
+            rafp: read_field(self.rafp)?,
+            inn: read_field(self.inn)?,
+            kpp: read_field(self.kpp)?,
+            address_id: self.address_id,
+            email: read_field(self.email)?,
+        })
+    }
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn core_create_organization(
+    dto: *const OrganizationDtoFfi,
+    out_id: *mut i64,
+) -> bool {
+    if let Some(slot) = unsafe { out_id.as_mut() } { *slot = -1; }
+
+    let dto = match unsafe { dto.as_ref() } { Some(dto) => dto, None => return false };
+    let dto = match unsafe { dto.try_into_core() } { Ok(dto) => dto, Err(_) => return false };
+
+    let repository = zdnp_data::SqliteOrganizationRepository::new();
+
+    match zdnp_core::create_organization(&repository, &dto) {
+        Ok(id) => { if let Some(slot) = unsafe { out_id.as_mut() } { *slot = id; } true }
+        Err(_) => false,
     }
 }
 

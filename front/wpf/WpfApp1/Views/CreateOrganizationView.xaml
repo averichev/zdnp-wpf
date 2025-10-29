@@ -4,40 +4,53 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="600">
+             d:DesignHeight="450" d:DesignWidth="720">
     <Grid Background="White">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="24" MinWidth="360" HorizontalAlignment="Center">
+            <StackPanel Margin="24" MinWidth="480" HorizontalAlignment="Center">
                 <TextBlock Text="Создание организации" FontSize="24" FontWeight="Bold" TextAlignment="Center"/>
                 <TextBlock Text="Заполните форму, чтобы добавить новую организацию." TextAlignment="Center" TextWrapping="Wrap"/>
 
-                <StackPanel Orientation="Vertical">
-                    <TextBlock Text="Наименование"/>
-                    <TextBox Margin="0,0,0,4"/>
+                <StackPanel Orientation="Vertical" Margin="0,16,0,0">
+                    <TextBlock Text="Полное наименование (full_name)"/>
+                    <TextBox x:Name="FullNameTextBox" Margin="0,0,0,8"/>
 
-                    <TextBlock Text="ИНН"/>
-                    <TextBox Margin="0,0,0,4"/>
+                    <TextBlock Text="Сокращённое наименование (abbreviated_name)"/>
+                    <TextBox x:Name="AbbreviatedNameTextBox" Margin="0,0,0,8"/>
 
-                    <TextBlock Text="КПП"/>
-                    <TextBox Margin="0,0,0,4"/>
+                    <TextBlock Text="ОГРН (ogrn)"/>
+                    <TextBox x:Name="OgrnTextBox" Margin="0,0,0,8"/>
 
-                    <TextBlock Text="ОГРН"/>
-                    <TextBox Margin="0,0,0,4"/>
+                    <TextBlock Text="РАФП (rafp)"/>
+                    <TextBox x:Name="RafpTextBox" Margin="0,0,0,8"/>
 
-                    <TextBlock Text="Юридический адрес"/>
-                    <TextBox Margin="0,0,0,4" AcceptsReturn="True" Height="60" TextWrapping="Wrap"/>
+                    <TextBlock Text="ИНН (inn)"/>
+                    <TextBox x:Name="InnTextBox" Margin="0,0,0,8"/>
 
-                    <TextBlock Text="Телефон"/>
-                    <TextBox Margin="0,0,0,4"/>
+                    <TextBlock Text="КПП (kpp)"/>
+                    <TextBox x:Name="KppTextBox" Margin="0,0,0,8"/>
 
-                    <TextBlock Text="Электронная почта"/>
-                    <TextBox Margin="0,0,0,4"/>
+                    <TextBlock Text="Адрес (address_id)"/>
+                    <ComboBox x:Name="AddressComboBox"
+                              Margin="0,0,0,8"
+                              DisplayMemberPath="RegionCode"
+                              SelectedValuePath="Id"
+                              IsSynchronizedWithCurrentItem="False"/>
+
+                    <TextBlock Text="Электронная почта (email)"/>
+                    <TextBox x:Name="EmailTextBox" Margin="0,0,0,8"/>
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
-                    <Button Content="Очистить" Width="100"/>
-                    <Button Content="Сохранить" Width="100"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                    <Button Content="Очистить" Width="100" Margin="0,0,8,0" Click="OnClearClick"/>
+                    <Button Content="Сохранить" Width="120" Click="OnSaveClick" IsDefault="True"/>
                 </StackPanel>
+
+                <TextBlock x:Name="StatusTextBlock"
+                           Margin="0,12,0,0"
+                           TextWrapping="Wrap"
+                           Foreground="Gray"
+                           Visibility="Collapsed"/>
             </StackPanel>
         </ScrollViewer>
     </Grid>
