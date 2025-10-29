@@ -57,12 +57,6 @@ public partial class MainWindow : Window
         NavigateToOrganizations();
     }
 
-    private void OnLegalEntitiesClick(object sender, RoutedEventArgs e)
-    {
-        MainContent.Content = new LegalEntitiesView();
-        Title = "Справочники — Юридические лица";
-    }
-
     private void OnPhysicalPersonsClick(object sender, RoutedEventArgs e)
     {
         MainContent.Content = new PhysicalPersonsView();
