@@ -11,9 +11,8 @@
             <MenuItem Header="📚 Справочники">
                 <MenuItem Header="Адреса" Click="OnAddressesClick"/>
                 <MenuItem Header="Организации" Click="OnOrganizationsClick"/>
-                <MenuItem Header="Юридические лица" Click="OnLegalEntitiesClick"/>
-                <MenuItem Header="Физические лица" Click="OnPhysicalPersonsClick"/>
                 <MenuItem Header="Индивидуальные предприниматели" Click="OnIndividualEntrepreneursClick"/>
+                <MenuItem Header="Физические лица" Click="OnPhysicalPersonsClick"/>
             </MenuItem>
         </Menu>
         <ContentControl x:Name="MainContent"/>
