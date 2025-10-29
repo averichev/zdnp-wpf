@@ -87,7 +87,11 @@ impl OrganizationDtoFfi {
             }
             let c_str = unsafe { CStr::from_ptr(ptr) };
             let utf8 = c_str.to_str()?;
-            if utf8.is_empty() { Ok(None) } else { Ok(Some(utf8.to_owned())) }
+            if utf8.is_empty() {
+                Ok(None)
+            } else {
+                Ok(Some(utf8.to_owned()))
+            }
         }
 
         Ok(OrganizationDto {
@@ -108,15 +112,28 @@ pub unsafe extern "C" fn core_create_organization(
     dto: *const OrganizationDtoFfi,
     out_id: *mut i64,
 ) -> bool {
-    if let Some(slot) = unsafe { out_id.as_mut() } { *slot = -1; }
+    if let Some(slot) = unsafe { out_id.as_mut() } {
+        *slot = -1;
+    }
 
-    let dto = match unsafe { dto.as_ref() } { Some(dto) => dto, None => return false };
-    let dto = match unsafe { dto.try_into_core() } { Ok(dto) => dto, Err(_) => return false };
+    let dto = match unsafe { dto.as_ref() } {
+        Some(dto) => dto,
+        None => return false,
+    };
+    let dto = match unsafe { dto.try_into_core() } {
+        Ok(dto) => dto,
+        Err(_) => return false,
+    };
 
     let repository = zdnp_data::SqliteOrganizationRepository::new();
 
     match zdnp_core::create_organization(&repository, &dto) {
-        Ok(id) => { if let Some(slot) = unsafe { out_id.as_mut() } { *slot = id; } true }
+        Ok(id) => {
+            if let Some(slot) = unsafe { out_id.as_mut() } {
+                *slot = id;
+            }
+            true
+        }
         Err(_) => false,
     }
 }
@@ -200,6 +217,26 @@ pub unsafe extern "C" fn core_list_addresses() -> *mut c_char {
     };
 
     let json = match to_string(&addresses) {
+        Ok(json) => json,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match CString::new(json) {
+        Ok(c_string) => c_string.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn core_list_organizations() -> *mut c_char {
+    let repository = zdnp_data::SqliteOrganizationRepository::new();
+
+    let organizations = match zdnp_core::list_organizations(&repository) {
+        Ok(organizations) => organizations,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let json = match to_string(&organizations) {
         Ok(json) => json,
         Err(_) => return std::ptr::null_mut(),
     };
