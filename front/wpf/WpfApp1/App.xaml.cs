@@ -1,17 +1,14 @@
-﻿using System;
-using System.Configuration;
-using System.Data;
-using System.Windows;
+﻿using System.Windows;
 
 namespace WpfApp1;
 
 /// <summary>
 /// Interaction logic for App.xaml
 /// </summary>
-public partial class App : Application
+public partial class App
 {
-    private static readonly object s_migrationLock = new();
-    private static bool s_migrationsApplied;
+    private static readonly Lock SMigrationLock = new();
+    private static bool _sMigrationsApplied;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -21,14 +18,17 @@ public partial class App : Application
 
     private static void EnsureMigrations()
     {
-        if (s_migrationsApplied)
+        lock (SMigrationLock)
         {
-            return;
+            if (_sMigrationsApplied)
+            {
+                return;
+            }
         }
 
-        lock (s_migrationLock)
+        lock (SMigrationLock)
         {
-            if (s_migrationsApplied)
+            if (_sMigrationsApplied)
             {
                 return;
             }
@@ -38,7 +38,7 @@ public partial class App : Application
                 throw new InvalidOperationException("Failed to run database migrations.");
             }
 
-            s_migrationsApplied = true;
+            _sMigrationsApplied = true;
         }
     }
 }
