@@ -37,11 +37,17 @@ public static partial class CoreNative
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_list_organizations")]
     private static extern IntPtr core_list_organizations();
 
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_list_entrepreneurs")]
+    private static extern IntPtr core_list_entrepreneurs();
+
     private static readonly JsonSerializerOptions s_jsonOptions = new() { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
 
     // Organization interop
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_create_organization")]
     private static extern bool core_create_organization(ref OrganizationDtoFfi dto, out long id);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_create_entrepreneur")]
+    private static extern bool core_create_entrepreneur(ref EntrepreneurDtoFfi dto, out long id);
 
     public static string CoreVersion()
     {
@@ -85,6 +91,27 @@ public static partial class CoreNative
         string Kpp,
         long AddressId,
         string Email
+    );
+
+    public sealed record class EntrepreneurDto(
+        string Surname,
+        string Name,
+        string? Patronymic,
+        string Ogrnip,
+        string Inn,
+        long AddressId,
+        string? Email
+    );
+
+    public sealed record Entrepreneur(
+        long Id,
+        string Surname,
+        string Name,
+        string? Patronymic,
+        string Ogrnip,
+        string Inn,
+        long AddressId,
+        string? Email
     );
 
     public static string? CoreFormatAddress(AddressDto dto)
@@ -172,6 +199,31 @@ public static partial class CoreNative
             }
 
             var list = JsonSerializer.Deserialize<Organization[]>(json, s_jsonOptions);
+            return list ?? [];
+        }
+        finally
+        {
+            core_free_string(ptr);
+        }
+    }
+
+    public static IReadOnlyList<Entrepreneur>? CoreListEntrepreneurs()
+    {
+        var ptr = core_list_entrepreneurs();
+        if (ptr == IntPtr.Zero)
+        {
+            return null;
+        }
+
+        try
+        {
+            var json = Marshal.PtrToStringUTF8(ptr);
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return [];
+            }
+
+            var list = JsonSerializer.Deserialize<Entrepreneur[]>(json, s_jsonOptions);
             return list ?? [];
         }
         finally
@@ -281,6 +333,47 @@ public static partial class CoreNative
         try
         {
             return core_create_organization(ref ffi, out id);
+        }
+        finally
+        {
+            FreeAllocations(allocations);
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct EntrepreneurDtoFfi
+    {
+        public IntPtr Surname;
+        public IntPtr Name;
+        public IntPtr Patronymic;
+        public IntPtr Ogrnip;
+        public IntPtr Inn;
+        public long AddressId;
+        public IntPtr Email;
+    }
+
+    private static EntrepreneurDtoFfi CreateEntrepreneurDtoFfi(EntrepreneurDto dto, List<IntPtr> allocations)
+    {
+        return new EntrepreneurDtoFfi
+        {
+            Surname = AllocateUtf8(dto.Surname, allocations),
+            Name = AllocateUtf8(dto.Name, allocations),
+            Patronymic = AllocateUtf8(dto.Patronymic, allocations),
+            Ogrnip = AllocateUtf8(dto.Ogrnip, allocations),
+            Inn = AllocateUtf8(dto.Inn, allocations),
+            AddressId = dto.AddressId,
+            Email = AllocateUtf8(dto.Email, allocations)
+        };
+    }
+
+    public static bool CoreCreateEntrepreneur(EntrepreneurDto dto, out long id)
+    {
+        var allocations = new List<IntPtr>(6);
+        var ffi = CreateEntrepreneurDtoFfi(dto, allocations);
+
+        try
+        {
+            return core_create_entrepreneur(ref ffi, out id);
         }
         finally
         {

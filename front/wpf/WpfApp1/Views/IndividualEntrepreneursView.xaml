@@ -6,9 +6,41 @@
              mc:Ignorable="d"
              d:DesignHeight="350" d:DesignWidth="525">
     <Grid Background="White">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="Экран &quot;Индивидуальные предприниматели&quot;" FontSize="24" FontWeight="Bold" TextAlignment="Center" Margin="0,0,0,12"/>
-            <TextBlock Text="Простое текстовое представление для справочника индивидуальных предпринимателей." TextAlignment="Center" TextWrapping="Wrap" Width="360"/>
-        </StackPanel>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,16">
+            <Button Content="Добавить предпринимателя"
+                    Width="220"
+                    DockPanel.Dock="Right"
+                    HorizontalAlignment="Right"
+                    Click="OnAddEntrepreneurClick"/>
+
+            <StackPanel Orientation="Vertical" DockPanel.Dock="Left" Margin="0,0,16,0">
+                <TextBlock Text="Список индивидуальных предпринимателей" FontSize="24" FontWeight="Bold"/>
+                <TextBlock Text="Выберите предпринимателя из списка или создайте нового." TextWrapping="Wrap" Margin="0,8,0,0"/>
+            </StackPanel>
+        </DockPanel>
+
+        <DataGrid Grid.Row="1"
+                  ItemsSource="{Binding Entrepreneurs}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  IsReadOnly="True"
+                  Margin="0"
+                  SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="SizeToHeader" SortMemberPath="Id"/>
+                <DataGridTextColumn Header="Фамилия" Binding="{Binding Surname}" Width="*" SortMemberPath="Surname"/>
+                <DataGridTextColumn Header="Имя" Binding="{Binding Name}" Width="*" SortMemberPath="Name"/>
+                <DataGridTextColumn Header="Отчество" Binding="{Binding Patronymic}" Width="*" SortMemberPath="Patronymic"/>
+                <DataGridTextColumn Header="ОГРНИП" Binding="{Binding Ogrnip}" Width="*" SortMemberPath="Ogrnip"/>
+                <DataGridTextColumn Header="ИНН" Binding="{Binding Inn}" Width="*" SortMemberPath="Inn"/>
+                <DataGridTextColumn Header="Адрес ID" Binding="{Binding AddressId}" Width="SizeToHeader" SortMemberPath="AddressId"/>
+                <DataGridTextColumn Header="Электронная почта" Binding="{Binding Email}" Width="*" SortMemberPath="Email"/>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </UserControl>
