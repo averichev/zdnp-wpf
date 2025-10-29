@@ -6,13 +6,42 @@
              mc:Ignorable="d"
              d:DesignHeight="350" d:DesignWidth="525">
     <Grid Background="White">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="360">
-            <TextBlock Text="Список организаций" FontSize="24" FontWeight="Bold" TextAlignment="Center"/>
-            <TextBlock Text="Выберите организацию из списка или создайте новую." TextAlignment="Center" TextWrapping="Wrap"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,16">
             <Button Content="Добавить организацию"
                     Width="200"
-                    HorizontalAlignment="Center"
+                    DockPanel.Dock="Right"
+                    HorizontalAlignment="Right"
                     Click="OnAddOrganizationClick"/>
-        </StackPanel>
+
+            <StackPanel Orientation="Vertical" DockPanel.Dock="Left" Margin="0,0,16,0">
+                <TextBlock Text="Список организаций" FontSize="24" FontWeight="Bold"/>
+                <TextBlock Text="Выберите организацию из списка или создайте новую." TextWrapping="Wrap" Margin="0,8,0,0"/>
+            </StackPanel>
+        </DockPanel>
+
+        <DataGrid Grid.Row="1"
+                  ItemsSource="{Binding Organizations}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  IsReadOnly="True"
+                  Margin="0"
+                  SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" SortMemberPath="Id" Width="SizeToHeader"/>
+                <DataGridTextColumn Header="Полное наименование" Binding="{Binding FullName}" SortMemberPath="FullName" Width="2*"/>
+                <DataGridTextColumn Header="Сокращённое" Binding="{Binding AbbreviatedName}" SortMemberPath="AbbreviatedName" Width="*"/>
+                <DataGridTextColumn Header="ОГРН" Binding="{Binding Ogrn}" SortMemberPath="Ogrn" Width="*"/>
+                <DataGridTextColumn Header="РАФП" Binding="{Binding Rafp}" SortMemberPath="Rafp" Width="*"/>
+                <DataGridTextColumn Header="ИНН" Binding="{Binding Inn}" SortMemberPath="Inn" Width="*"/>
+                <DataGridTextColumn Header="КПП" Binding="{Binding Kpp}" SortMemberPath="Kpp" Width="*"/>
+                <DataGridTextColumn Header="Адрес ID" Binding="{Binding AddressId}" SortMemberPath="AddressId" Width="SizeToHeader"/>
+                <DataGridTextColumn Header="Электронная почта" Binding="{Binding Email}" SortMemberPath="Email" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </UserControl>

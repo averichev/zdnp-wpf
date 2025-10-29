@@ -187,6 +187,7 @@ impl std::error::Error for OrganizationRepositoryError {}
 
 pub trait OrganizationRepository {
     fn create(&self, dto: &OrganizationDto) -> Result<i64, OrganizationRepositoryError>;
+    fn list(&self) -> Result<Vec<Organization>, OrganizationRepositoryError>;
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -222,6 +223,25 @@ pub fn create_organization<R: OrganizationRepository>(
     repository
         .create(&sanitized)
         .map_err(OrganizationError::Repository)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct Organization {
+    pub id: i64,
+    pub full_name: String,
+    pub abbreviated_name: String,
+    pub ogrn: Option<String>,
+    pub rafp: Option<String>,
+    pub inn: String,
+    pub kpp: String,
+    pub address_id: i64,
+    pub email: String,
+}
+
+pub fn list_organizations<R: OrganizationRepository>(
+    repository: &R,
+) -> Result<Vec<Organization>, OrganizationRepositoryError> {
+    repository.list()
 }
 
 fn sanitize_organization(dto: &OrganizationDto) -> Result<OrganizationDto, OrganizationError> {

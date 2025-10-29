@@ -5,7 +5,7 @@ use sqlx::{Row, SqlitePool, migrate::Migrator, sqlite::SqliteConnectOptions};
 use tokio::runtime::Runtime;
 use zdnp_core::{
     Address, AddressDto, AddressRepository, AddressRepositoryError, Migrations, MigrationsResult,
-    OrganizationDto, OrganizationRepository, OrganizationRepositoryError,
+    Organization, OrganizationDto, OrganizationRepository, OrganizationRepositoryError,
 };
 
 static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
@@ -259,10 +259,9 @@ impl OrganizationRepository for SqliteOrganizationRepository {
                 .as_deref()
                 .ok_or_else(|| OrganizationRepositoryError::storage("Full name is required"))?;
 
-            let abbreviated_name = dto
-                .abbreviated_name
-                .as_deref()
-                .ok_or_else(|| OrganizationRepositoryError::storage("Abbreviated name is required"))?;
+            let abbreviated_name = dto.abbreviated_name.as_deref().ok_or_else(|| {
+                OrganizationRepositoryError::storage("Abbreviated name is required")
+            })?;
 
             let inn = dto
                 .inn
@@ -290,12 +289,14 @@ impl OrganizationRepository for SqliteOrganizationRepository {
                 .as_deref()
                 .and_then(|v| v.trim().parse::<i64>().ok());
 
-            let inn_int: i64 = inn.trim().parse::<i64>().map_err(|e| {
-                OrganizationRepositoryError::storage(format!("Invalid INN: {e}"))
-            })?;
-            let kpp_int: i64 = kpp.trim().parse::<i64>().map_err(|e| {
-                OrganizationRepositoryError::storage(format!("Invalid KPP: {e}"))
-            })?;
+            let inn_int: i64 = inn
+                .trim()
+                .parse::<i64>()
+                .map_err(|e| OrganizationRepositoryError::storage(format!("Invalid INN: {e}")))?;
+            let kpp_int: i64 = kpp
+                .trim()
+                .parse::<i64>()
+                .map_err(|e| OrganizationRepositoryError::storage(format!("Invalid KPP: {e}")))?;
 
             let result = sqlx::query(
                 r#"INSERT INTO organization (
@@ -319,6 +320,57 @@ impl OrganizationRepository for SqliteOrganizationRepository {
             pool.close().await;
 
             Ok::<i64, OrganizationRepositoryError>(id)
+        })
+    }
+
+    fn list(&self) -> Result<Vec<Organization>, OrganizationRepositoryError> {
+        let database_path = self.database_path()?;
+        let runtime = Runtime::new()
+            .map_err(|error| OrganizationRepositoryError::storage(error.to_string()))?;
+
+        runtime.block_on(async move {
+            let options = SqliteConnectOptions::new()
+                .filename(&database_path)
+                .create_if_missing(true);
+
+            let pool = SqlitePool::connect_with(options)
+                .await
+                .map_err(|error| OrganizationRepositoryError::storage(error.to_string()))?;
+
+            let rows = sqlx::query(
+                r#"SELECT id, full_name, abbreviated_name, ogrn, rafp, inn, kpp, address_id, email
+                   FROM organization
+                   ORDER BY id"#,
+            )
+            .fetch_all(&pool)
+            .await
+            .map_err(|error| OrganizationRepositoryError::storage(error.to_string()))?;
+
+            pool.close().await;
+
+            let organizations = rows
+                .into_iter()
+                .map(|row| {
+                    let ogrn: Option<i64> = row.get("ogrn");
+                    let rafp: Option<i64> = row.get("rafp");
+                    let inn: i64 = row.get("inn");
+                    let kpp: i64 = row.get("kpp");
+
+                    Organization {
+                        id: row.get("id"),
+                        full_name: row.get("full_name"),
+                        abbreviated_name: row.get("abbreviated_name"),
+                        ogrn: ogrn.map(|value| value.to_string()),
+                        rafp: rafp.map(|value| value.to_string()),
+                        inn: inn.to_string(),
+                        kpp: kpp.to_string(),
+                        address_id: row.get("address_id"),
+                        email: row.get("email"),
+                    }
+                })
+                .collect();
+
+            Ok::<Vec<Organization>, OrganizationRepositoryError>(organizations)
         })
     }
 }

@@ -34,6 +34,9 @@ public static partial class CoreNative
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_list_addresses")]
     private static extern IntPtr core_list_addresses();
 
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, EntryPoint = "core_list_organizations")]
+    private static extern IntPtr core_list_organizations();
+
     private static readonly JsonSerializerOptions s_jsonOptions = new() { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
 
     // Organization interop
@@ -70,6 +73,18 @@ public static partial class CoreNative
         string? Street,
         string? Building,
         string? Room
+    );
+
+    public sealed record Organization(
+        long Id,
+        string FullName,
+        string AbbreviatedName,
+        string? Ogrn,
+        string? Rafp,
+        string Inn,
+        string Kpp,
+        long AddressId,
+        string Email
     );
 
     public static string? CoreFormatAddress(AddressDto dto)
@@ -132,6 +147,31 @@ public static partial class CoreNative
             }
 
             var list = JsonSerializer.Deserialize<Address[]>(json, s_jsonOptions);
+            return list ?? [];
+        }
+        finally
+        {
+            core_free_string(ptr);
+        }
+    }
+
+    public static IReadOnlyList<Organization>? CoreListOrganizations()
+    {
+        var ptr = core_list_organizations();
+        if (ptr == IntPtr.Zero)
+        {
+            return null;
+        }
+
+        try
+        {
+            var json = Marshal.PtrToStringUTF8(ptr);
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return [];
+            }
+
+            var list = JsonSerializer.Deserialize<Organization[]>(json, s_jsonOptions);
             return list ?? [];
         }
         finally
